@@ -48,23 +48,28 @@ a previous conversation.
 4. For an external write, state the intended destination and effect and obtain
    the user's explicit approval before delegating it. Approval to investigate
    does not imply approval to send or modify.
-5. Report which Nebula agent handled the task and preserve any returned channel
-   ID for follow-up work. Do not claim the outer agent performed Nebula's work.
+5. Report which Nebula agent handled the task and preserve the returned
+   `thread_id` for follow-up work. Do not claim the outer agent performed
+   Nebula's work.
 
 If the user explicitly wants the default active agent, omit `--agent`. Prefer a
 named agent when its description or toolkits clearly match the task.
 
 ## Continue a conversation
 
-Use the same channel for follow-ups to the same task. Inspect channels with
-`scripts/nebula.sh channels`, then use the native CLI's channel option:
+Use the exact `thread_id` returned by the original chat for follow-ups to the
+same task. Although the CLI option is named `--channel`, its value is a thread
+ID; a channel can contain multiple threads, so do not substitute a channel ID or
+select a thread by channel name.
 
 ```sh
-nebula-ai --json chat --channel "<channel-id>" --no-stream "<follow-up>"
+nebula-ai --json chat --channel "<thread-id>" --no-stream "<follow-up>"
 ```
 
-Start a new conversation for unrelated work. Do not reuse a channel merely
-because it involves the same service.
+If the original `thread_id` was not retained, inspect channels and their
+messages to identify the exact thread before continuing; do not guess. Start a
+new conversation for unrelated work. Do not reuse a thread merely because it
+involves the same service.
 
 ## Handle connected services safely
 

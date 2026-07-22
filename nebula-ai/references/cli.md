@@ -48,12 +48,15 @@ fields needed to choose an agent; avoid copying complete records into context.
 
 ```sh
 nebula-ai --json chat --no-stream --agent "<name-or-slug>" "<message>"
-nebula-ai --json chat --no-stream --channel "<channel-id>" "<follow-up>"
+nebula-ai --json chat --no-stream --channel "<thread-id>" "<follow-up>"
 ```
 
 Without `--agent` or `--channel`, chat uses the first active agent. Prefer
 `--no-stream` in automated runs. JSON output is one object with `thread_id`,
-`agent`, `status`, `final_message`, and `events`.
+`agent`, `status`, `final_message`, and `events`. Preserve `thread_id` from the
+original response and pass that exact value to `--channel` for continuations.
+Despite the option name, `--channel` targets a thread ID; do not replace it with
+the containing channel's ID.
 
 ## Integrations
 
