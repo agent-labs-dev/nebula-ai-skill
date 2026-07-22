@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nebula AI"
+  short_description: "Delegate work through connected Nebula agents"
+  default_prompt: "Use $nebula-ai to delegate this task through my Nebula workspace."
