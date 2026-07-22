@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   maintain:
-    if: github.event_name != 'pull_request' || github.base_ref == 'cb/staging'
+    if: github.event_name == 'schedule' || (github.actor == 'cjber' && (github.event_name != 'pull_request' || github.base_ref == 'cb/staging'))
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -78,7 +78,7 @@ jobs:
           if [[ -n "${staging_date}" ]]; then
             staging_age_days="$(( ($(date +%s) - $(date -d "${staging_date}" +%s)) / 86400 ))"
           fi
-          task_prs="$(gh pr list --repo "${repository}" --base cb/staging --state open --json number --jq 'length')"
+          task_prs="$(gh pr list --repo "${repository}" --base cb/staging --author cjber --state open --json number --jq 'length')"
           promotion_number="$(gh pr list --repo "${repository}" --base main --head cb/staging --state open --json number --jq '.[0].number // empty')"
 
           gh label create composed-dev-verified --repo "${repository}" --color 0E8A16 \
@@ -126,11 +126,11 @@ jobs:
           elif (( staging_age_days >= 7 )); then
             state=stale
           elif (( behind > 0 )); then
-            state=promotion-blocked
+            state=needs-attention
           elif (( task_prs > 0 )); then
             state=collecting
           elif [[ "${verified}" != "true" ]]; then
-            state=promotion-blocked
+            state=needs-attention
           fi
 
           if (( ahead > 0 )) && [[ -z "${promotion_number}" ]]; then
@@ -143,7 +143,10 @@ jobs:
           if [[ -n "${promotion_number}" ]]; then
             body_file="$(mktemp)"
             {
-              echo "## Automated staging promotion status"
+              echo "## Personal staging promotion status"
+              echo
+              echo "**Owner:** @cjber"
+              echo "**Scope:** Advisory only; this does not add a required check or affect other contributors."
               echo
               echo "**State:** \`${state}\`"
               echo
@@ -153,7 +156,7 @@ jobs:
               echo "| Staging SHA | \`${staging_sha}\` |"
               echo "| Staging divergence | ${ahead} ahead, ${behind} behind |"
               echo "| Automatic main sync | ${sync_result} |"
-              echo "| Open task PRs targeting staging | ${task_prs} |"
+              echo "| Open cjber task PRs targeting staging | ${task_prs} |"
               echo "| Composed /dev proof for current staging | ${verified} |"
               echo "| Latest staging commit time | ${staging_date:-unavailable} |"
               echo "| Staging age | ${staging_age_days} day(s) |"
@@ -178,47 +181,7 @@ jobs:
             echo "- staging: \`${staging_sha}\`"
             echo "- divergence: ${ahead} ahead, ${behind} behind"
             echo "- automatic main sync: ${sync_result}"
-            echo "- task PRs: ${task_prs}"
+            echo "- cjber task PRs: ${task_prs}"
             echo "- composed verification: ${verified}"
             echo "- promotion PR: ${promotion_number:-missing}"
           } >>"${GITHUB_STEP_SUMMARY}"
-
-  promotion-gate:
-    name: Staging promotion gate
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
-      statuses: read
-    env:
-      GH_TOKEN: ${{ github.token }}
-    steps:
-      - name: Require synchronized, integrated, composed staging
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          repository="${GITHUB_REPOSITORY}"
-          if [[ "${GITHUB_HEAD_REF}" != "cb/staging" ]]; then
-            echo "Not a staging promotion PR; gate is not applicable." >>"${GITHUB_STEP_SUMMARY}"
-            exit 0
-          fi
-          comparison="$(gh api "repos/${repository}/compare/main...cb/staging")"
-          staging_sha="$(gh api "repos/${repository}/branches/cb%2Fstaging" --jq '.commit.sha')"
-          behind="$(jq -r '.behind_by' <<<"${comparison}")"
-          task_prs="$(gh pr list --repo "${repository}" --base cb/staging --state open --json number --jq 'length')"
-          verification_state="$(gh api "repos/${repository}/commits/${staging_sha}/status" \
-            --jq '[.statuses[] | select(.context == "composed-dev-verification")][0].state // "missing"')"
-
-          failures=()
-          (( behind == 0 )) || failures+=("cb/staging is ${behind} commit(s) behind main")
-          (( task_prs == 0 )) || failures+=("${task_prs} task PR(s) still target cb/staging")
-          [[ "${verification_state}" == "success" ]] || failures+=("composed /dev verification is missing or stale")
-
-          if (( ${#failures[@]} > 0 )); then
-            printf '%s\n' "${failures[@]}" >&2
-            exit 1
-          fi
-
-          echo "Staging is synchronized, fully integrated, and composed-verified." >>"${GITHUB_STEP_SUMMARY}"
