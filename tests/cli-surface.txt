@@ -1,4 +1,4 @@
-# nebula-ai 0.1.9
+# nebula-ai 0.1.10
 
 ===== nebula-ai
 Usage: nebula-ai [options] [command]
@@ -21,18 +21,16 @@ Commands:
   logout                    Clear stored credentials
   status                    Show CLI status overview
   usage [options]           Show workspace token usage and cost
-  chat [options] [message]  Send a message to an agent DM and stream the
-                            response
+  chat [options] [message]  Send a message to an agent DM and print the reply
   call                      Voice calls
   channels                  Manage channels (threads)
   agents                    Manage agents
   user                      View or update user profile and account settings
   profile                   View or update your user profile
-  local-device              Manage computer control and the local device daemon
-  install [options]         Set up computer control (alias of `local-device
-                            enable`)
-  uninstall [options]       Turn off computer control, stop the daemon, and
-                            remove this device
+  local-device              Manage computer use and the local device daemon
+  install [options]         Set up computer use (alias of `local-device enable`)
+  uninstall [options]       Turn off computer use, stop the daemon, and remove
+                            this device
   update [options]          Check for a newer CLI version and install it
   completion <shell>        Generate a shell completion script (bash|zsh|fish)
   capabilities              Probe and print this host's capability snapshot
@@ -78,7 +76,7 @@ Options:
 ===== nebula-ai chat
 Usage: nebula-ai chat [options] [message]
 
-Send a message to an agent DM and stream the response
+Send a message to an agent DM and print the reply
 
 Arguments:
   message                    Message to send (omit when using --resume)
@@ -91,7 +89,7 @@ Options:
                              e.g. --context 'src/**/*.ts') (default: [])
   -r, --resume <channel-id>  Boot the TUI directly into an existing channel (no
                              message needed)
-  --no-stream                Wait for full response instead of streaming
+  --no-stream                Wait quietly, without the running tool commentary
   -h, --help                 display help for command
 
 ===== nebula-ai call
@@ -118,10 +116,12 @@ Usage: nebula-ai call start [options]
 Start a call (opens the TUI; --json for scripts)
 
 Options:
-  --thread <id>    Origin thread that seeds agent context
-  --title <title>  Initial call title
-  --private        Private visibility (default: workspace)
-  -h, --help       display help for command
+  --thread <id>     Origin thread that seeds agent context
+  --title <title>   Initial call title
+  --private         Private visibility (default: workspace)
+  --channel <slug>  Channel to place the call in; a DM's slug rings the other
+                    person
+  -h, --help        display help for command
 
 ===== nebula-ai call list
 Usage: nebula-ai call list [options] <thread>
@@ -470,8 +470,8 @@ Arguments:
   id                          Agent ID
 
 Options:
-  -a, --account <account_id>  Account id to bind (see `nebula integrations
-                              accounts`)
+  -a, --account <account_id>  Account id to bind (see `nebula-ai agents accounts
+                              <id>`)
   -h, --help                  display help for command
 
 ===== nebula-ai agents triggers
@@ -1068,31 +1068,33 @@ Options:
 ===== nebula-ai local-device
 Usage: nebula-ai local-device [options] [command]
 
-Manage computer control and the local device daemon
+Manage computer use and the local device daemon
 
 Options:
   -h, --help        display help for command
 
 Commands:
-  enable [options]  Turn on computer control: sign in, use this folder as the
+  enable [options]  Turn on computer use: sign in, use this folder as the
                     working folder, register this device, and start the daemon
-  disable           Turn off computer control and stop the daemon
-  status            Show computer-control and daemon status
+  disable           Turn off computer use and stop the daemon
+  status            Show computer-use and daemon status
   logs [options]    View daemon logs
   start             Start the daemon
   stop              Stop the daemon
   restart           Restart the daemon
   exec-mode         Manage whether the agent can run commands on the host
+  claude-code       Whether the Claude Code CLI is on this device, and where
   help [command]    display help for command
 
 ===== nebula-ai local-device enable
 Usage: nebula-ai local-device enable [options]
 
-Turn on computer control: sign in, use this folder as the working folder,
-register this device, and start the daemon
+Turn on computer use: sign in, use this folder as the working folder, register
+this device, and start the daemon
 
 Options:
-  --source <name>          Metadata source for this install (default: "cli")
+  --source <name>          Accepted for older installers; nothing stores it any
+                           more (default: "cli")
   --primary-folder <path>  Override the working folder instead of using the
                            current directory
   -h, --help               display help for command
@@ -1100,7 +1102,7 @@ Options:
 ===== nebula-ai local-device disable
 Usage: nebula-ai local-device disable [options]
 
-Turn off computer control and stop the daemon
+Turn off computer use and stop the daemon
 
 Options:
   -h, --help  display help for command
@@ -1108,7 +1110,7 @@ Options:
 ===== nebula-ai local-device status
 Usage: nebula-ai local-device status [options]
 
-Show computer-control and daemon status
+Show computer-use and daemon status
 
 Options:
   -h, --help  display help for command
@@ -1179,13 +1181,34 @@ Arguments:
 Options:
   -h, --help  display help for command
 
+===== nebula-ai local-device claude-code
+Usage: nebula-ai local-device claude-code [options] [command]
+
+Whether the Claude Code CLI is on this device, and where
+
+Options:
+  -h, --help      display help for command
+
+Commands:
+  get             Show where `claude` resolves on this device, and its version
+  help [command]  display help for command
+
+===== nebula-ai local-device claude-code get
+Usage: nebula-ai local-device claude-code get [options]
+
+Show where `claude` resolves on this device, and its version
+
+Options:
+  -h, --help  display help for command
+
 ===== nebula-ai install
 Usage: nebula-ai install [options]
 
-Set up computer control (alias of `local-device enable`)
+Set up computer use (alias of `local-device enable`)
 
 Options:
-  --source <name>          Metadata source for this install (default: "cli")
+  --source <name>          Accepted for older installers; nothing stores it any
+                           more (default: "cli")
   --primary-folder <path>  Override the working folder instead of using the
                            current directory
   -h, --help               display help for command
@@ -1193,7 +1216,7 @@ Options:
 ===== nebula-ai uninstall
 Usage: nebula-ai uninstall [options]
 
-Turn off computer control, stop the daemon, and remove this device
+Turn off computer use, stop the daemon, and remove this device
 
 Options:
   --keep-data  Keep configuration and log files
@@ -1260,6 +1283,7 @@ Commands:
   default [model]   Show or set the workspace default model (admin only)
   curate [options]  Show or change which vendor models the workspace offers
   custom            Manage bring-your-own models
+  local             Zero-setup local models (Ollama, this machine only)
   help [command]    display help for command
 
 ===== nebula-ai models list
@@ -1328,6 +1352,47 @@ Options:
 Usage: nebula-ai models custom remove [options] <model-id>
 
 Delete a custom model you own (e.g. custom:cm_abc)
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai models local
+Usage: nebula-ai models local [options] [command]
+
+Zero-setup local models (Ollama, this machine only)
+
+Options:
+  -h, --help       display help for command
+
+Commands:
+  catalog          Models setup can pull, best first, and whether each fits
+  setup [options]  Enable local models, install/start Ollama, and adopt a
+                   default model
+  status           Show whether local models are enabled and what's adopted
+  help [command]   display help for command
+
+===== nebula-ai models local catalog
+Usage: nebula-ai models local catalog [options]
+
+Models setup can pull, best first, and whether each fits
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai models local setup
+Usage: nebula-ai models local setup [options]
+
+Enable local models, install/start Ollama, and adopt a default model
+
+Options:
+  --model <name>  Pull this catalog model even if it needs more RAM than this
+                  machine has
+  -h, --help      display help for command
+
+===== nebula-ai models local status
+Usage: nebula-ai models local status [options]
+
+Show whether local models are enabled and what's adopted
 
 Options:
   -h, --help  display help for command

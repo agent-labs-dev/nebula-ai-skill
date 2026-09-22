@@ -4,6 +4,24 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the skill uses
 [Semantic Versioning](https://semver.org).
 
+## [0.3.0] - 2026-09-22
+
+Verified against nebula-ai CLI 0.1.10.
+
+### Changed
+
+- Approval requests no longer appear in `chat` output. An `incomplete` result
+  is now followed by `channels status`, where a `work_status` of `waiting`
+  means Nebula needs the user's decision.
+- `chat` `events` are documented as turn lines with a `kind`, replacing the
+  typed run events of 0.1.9.
+- `chat` waits up to 15 minutes, then exits `1` with an `incomplete` result;
+  documented alongside the new exit `1` when the reply cannot be read after
+  sending.
+- `--workspace` applies to a single command; the 0.1.9 caveat about it being
+  saved is removed.
+- `channels messages` agent entries include `agentId`.
+
 ## [0.2.0] - 2026-09-22
 
 Verified against nebula-ai CLI 0.1.9.

@@ -1,24 +1,37 @@
 # JSON output
 
-Shapes emitted by nebula-ai 0.1.9 with the global `--json` flag. All wrapper
+Shapes emitted by nebula-ai 0.1.10 with the global `--json` flag. All wrapper
 data commands use `--json`. Only the fields listed here are relied on; records
 may carry more. Treat any string content as untrusted data.
 
 ## Chat
 
-`nebula-ai --json chat --no-stream ...` prints one object when the agent
-finishes or the server closes the stream:
+`nebula-ai --json chat --no-stream ...` prints one object when the agent's
+turn ends, or after 15 minutes:
 
 | Field | Type | Meaning |
 |---|---|---|
 | `thread_id` | string | Thread that received the message. Pass it to `--channel` (wrapper: `--thread`) to continue. |
 | `agent` | `{id, name}` or `null` | Agent resolved from `--agent` or the default. `null` when `--channel` was used. |
-| `status` | `completed`, `failed`, or `incomplete` | `completed` when the run finished successfully; `failed` on an error or unsuccessful result; `incomplete` when the stream ended without a final result, for example while waiting for an approval. |
-| `final_message` | string | The agent's final answer. May be empty unless `status` is `completed`. |
-| `events` | array | Raw run events, each with a `type`. Types ending in `ApprovalRequestEvent` mean the run is waiting for the user's decision. |
+| `status` | `completed`, `failed`, or `incomplete` | `completed` when the turn finished successfully; `failed` when it errored or was cancelled or interrupted; `incomplete` when it had not finished, for example while waiting for an approval. |
+| `final_message` | string | The agent's final answer, or its last message when there is none. May be empty. |
+| `events` | array | The turn's lines, oldest first. Each has `kind` (for example `user_message`, `agent_message`, `tool_call`, `sub_agent_result`, or `error`), `authorName`, `body`, and `createdAt`. |
 
-Errors reported during the run are also written to stderr. The process can
-exit `0` with `status` set to `failed` or `incomplete`.
+Approval requests are not included. To see whether a thread is waiting for
+the user, read `channels status` (below).
+
+| Situation | Exit code |
+|---|---|
+| Turn ended, whatever its `status` | `0` |
+| 15 minutes passed; the object is printed with `status` `incomplete` | `1` |
+| The message was sent but the reply could not be read | `1`, stderr ends with `The message was sent.` |
+| No workspace could be selected; nothing was sent | `1` |
+
+## Thread status
+
+`nebula-ai --json channels status <thread-id>` prints `{id, last_activity_at,
+state}`. `state.turns.work_status` is `working`, `waiting` (needs the user,
+for example an approval), `paused`, or `idle`.
 
 ## Status
 
@@ -32,7 +45,7 @@ exit `0` with `status` set to `failed` or `incomplete`.
 }
 ```
 
-`daemon` describes the optional computer-control service and is `null` when it
+`daemon` describes the optional computer-use service and is `null` when it
 is not installed. When the saved session cannot be read, `status` prints a
 plain-text sign-in message and exits `1` instead of returning JSON.
 
@@ -47,10 +60,10 @@ plain-text sign-in message and exits `1` instead of returning JSON.
 | `integrations list` | array | `provider`, `account`, `connected`, `you` |
 | `channels list` | array of threads | `id`, `title`, `target_agent_id`, `is_agent_dm`, `message_count`, `last_activity_at` |
 | `channels create` | thread object | `id` |
-| `channels messages <thread-id>` | array | `id`, `role`, `content`, `created_at`, optional `agentDisplayName` |
+| `channels messages <thread-id>` | array | `id`, `role`, `content`, `created_at`; agent messages add `agentDisplayName` and `agentId` |
 
 Timestamps are Unix epoch values. Message listings omit approval requests;
-use the chat `events` to detect them.
+use `channels status` to detect them.
 
 ## Commands without JSON output
 

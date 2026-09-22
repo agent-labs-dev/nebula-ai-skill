@@ -12,6 +12,7 @@ credentials.
 
 | Skill | nebula-ai CLI |
 |---|---|
+| 0.3.0 | 0.1.10 |
 | 0.2.0 | 0.1.9 |
 
 The supported CLI version is recorded in [`nebula-ai/cli-version`](nebula-ai/cli-version).
@@ -41,7 +42,7 @@ metadata for clients that read it.
 The skill offers to install the CLI after asking. To install it yourself:
 
 ```sh
-npm install --global nebula-ai@0.1.9
+npm install --global nebula-ai@0.1.10
 nebula-ai login
 ```
 
@@ -53,7 +54,7 @@ nebula-ai login
   handled it, and the thread for follow-ups.
 - Continues and inspects existing threads.
 
-It deliberately leaves out voice calls, computer control, billing, profile
+It deliberately leaves out voice calls, computer use, billing, profile
 changes, and workspace administration, and asks before using them.
 
 ## Security
