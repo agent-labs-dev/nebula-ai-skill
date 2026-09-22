@@ -29,6 +29,8 @@ CLI only for commands the wrapper does not cover; see
      `scripts/nebula.sh install`, which installs the verified version.
    - Exit `3`: not signed in. Run `nebula-ai login` and let the user finish the
      browser pairing. Never ask the user to paste a token or API key.
+   - Exit `1`: the CLI failed for another reason. Report its error; do not
+     start a login.
    - A version warning means the installed CLI differs from the version this
      skill was verified against. Continue, but tell the user if a command or
      output shape does not match this guide. Do not upgrade or downgrade the
@@ -36,7 +38,8 @@ CLI only for commands the wrapper does not cover; see
 2. If the user names a workspace, confirm it appears in
    `scripts/nebula.sh workspaces` before passing `--workspace <id-or-slug>`.
    An unknown value only prints a warning and falls back to the last-used
-   workspace, and a valid value becomes the saved default for later commands.
+   workspace. In 0.1.9 a valid value is also saved as the default for later
+   commands, although the CLI's help describes it as per-session.
    Never switch workspaces silently.
 
 ## Choose an agent

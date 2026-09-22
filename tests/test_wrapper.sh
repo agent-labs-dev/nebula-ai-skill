@@ -15,7 +15,7 @@ export SHIM_ARGV_LOG="$repo_dir/tests/.wrapper-argv.log"
 export SHIM_CASE_LOG="$task_tmp/argv"
 export SHIM_NPM_LOG="$task_tmp/npm-argv"
 export SHIM_PIN="$pin"
-export SHIM_LOGGED_OUT=0 SHIM_AUTH_FALSE=0 SHIM_VERSION="$pin" SHIM_EXIT_CODE=0
+export SHIM_LOGGED_OUT=0 SHIM_STATUS_ERROR=0 SHIM_AUTH_FALSE=0 SHIM_VERSION="$pin" SHIM_EXIT_CODE=0
 : > "$SHIM_ARGV_LOG"
 
 cat > "$task_tmp/bin/nebula-ai" <<'SH'
@@ -38,6 +38,10 @@ for last_argument do :; done
 if [ "$#" -eq 1 ] && [ "$1" = --version ]; then
     printf '%s\n' "${SHIM_VERSION:-$SHIM_PIN}"
 elif [ "$last_argument" = status ]; then
+    if [ "${SHIM_STATUS_ERROR:-0}" = 1 ]; then
+        printf '%s\n' 'Error: configuration file is invalid' >&2
+        exit 1
+    fi
     if [ "${SHIM_LOGGED_OUT:-0}" = 1 ]; then
         printf '%s\n' 'Not signed in. Run nebula-ai login.' >&2
         exit 1
@@ -124,6 +128,12 @@ expected --version
 expected --json --no-color status
 run_case 'doctor logged_in false' 3 doctor
 SHIM_AUTH_FALSE=0
+
+SHIM_STATUS_ERROR=1
+expected --version
+expected --json --no-color status
+run_case 'doctor status error' 1 doctor
+SHIM_STATUS_ERROR=0
 
 SHIM_VERSION=0.0.0
 expected --version

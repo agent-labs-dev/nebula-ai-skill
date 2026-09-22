@@ -98,12 +98,19 @@ doctor() {
     if [ "$installed" != "$pinned_version" ]; then
         printf '%s\n' "warning: installed version differs from $pinned_version; commands or output may differ." >&2
     fi
-    if status_json=$(nebula-ai --json --no-color status 2>/dev/null) &&
-        printf '%s' "$status_json" | grep -Eq '"logged_in"[[:space:]]*:[[:space:]]*true'; then
+    status_rc=0
+    status_output=$(nebula-ai --json --no-color status 2>&1) || status_rc=$?
+    if [ "$status_rc" -eq 0 ] &&
+        printf '%s' "$status_output" | grep -Eq '"logged_in"[[:space:]]*:[[:space:]]*true'; then
         printf '%s\n' "auth: signed in"
-    else
+    elif [ "$status_rc" -eq 0 ] || printf '%s' "$status_output" | grep -q 'nebula-ai login'; then
+        # Signed out, or the saved session is unreadable; both need a new login.
         printf '%s\n' "auth: not signed in. Run: nebula-ai login" >&2
         exit 3
+    else
+        printf '%s\n' "$status_output" >&2
+        printf 'nebula-ai status failed with exit %s\n' "$status_rc" >&2
+        exit 1
     fi
 }
 
