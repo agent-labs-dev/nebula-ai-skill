@@ -2,11 +2,11 @@
 name: nebula-ai
 description: Install and use the Nebula AI CLI to delegate tasks to specialized Nebula agents and work through user-authorized services such as Gmail, Slack, GitHub, Linear, and calendars without exposing service credentials. Use when the user asks to use Nebula, contact or delegate to a Nebula agent, inspect Nebula channels or threads, continue delegated work, or act through an account connected to their Nebula workspace.
 license: MIT
-compatibility: Requires the nebula-ai CLI 0.1.9 (npm package nebula-ai), Node.js 18 or later, a POSIX shell, and network access to nebula.gg. Signing in opens a browser.
+compatibility: Requires the nebula-ai CLI 0.1.10 (npm package nebula-ai), Node.js 18 or later, a POSIX shell, and network access to nebula.gg. Signing in opens a browser.
 metadata:
   author: Agent Labs
-  version: "0.2.0"
-  cli-version: "0.1.9"
+  version: "0.3.0"
+  cli-version: "0.1.10"
 ---
 
 # Nebula AI
@@ -37,10 +37,9 @@ CLI only for commands the wrapper does not cover; see
      CLI without approval.
 2. If the user names a workspace, confirm it appears in
    `scripts/nebula.sh workspaces` before passing `--workspace <id-or-slug>`.
-   An unknown value only prints a warning and falls back to the last-used
-   workspace. In 0.1.9 a valid value is also saved as the default for later
-   commands, although the CLI's help describes it as per-session.
-   Never switch workspaces silently.
+   It applies to that command only. An unknown value only prints a warning
+   and falls back to the last-used workspace. Never switch workspaces
+   silently.
 
 ## Choose an agent
 
@@ -69,10 +68,10 @@ CLI only for commands the wrapper does not cover; see
    scripts/nebula.sh chat --agent "<agent-slug>" -- "<task>"
    ```
 
-   The call blocks until the agent finishes, which can take minutes. Allow a
-   generous timeout. The task is sent before the wait begins, so after a
-   timeout or interruption read the thread (see below) instead of resending,
-   which could repeat a write.
+   The call blocks until the agent finishes, for up to 15 minutes. Allow a
+   timeout of at least that long. The task is sent before the wait begins, so
+   after a timeout, an interruption, or a non-zero exit read the thread (see
+   below) instead of resending, which could repeat a write.
 4. Attach local files only when the user asked for that exact disclosure:
    `--context "<glob>"`, repeatable, quoted so the CLI expands it relative to
    the current directory. Uploads are limited to 50 files and 512 KiB in
@@ -82,15 +81,19 @@ CLI only for commands the wrapper does not cover; see
 
 The wrapper prints one JSON object: `thread_id`, `agent`, `status`,
 `final_message`, and `events`. A zero exit code does not mean success; read
-`status`:
+`status`. If the CLI waited the full 15 minutes, it prints the object with
+`status` set to `incomplete` and exits `1`.
 
 - `completed`: report `final_message`, name the Nebula agent that did the
   work, and keep `thread_id` for follow-ups.
 - `failed`: report the failure once. Do not retry a write without asking.
-- `incomplete`: the agent is waiting. If `events` contains an entry whose
-  `type` ends in `ApprovalRequestEvent`, Nebula needs the user's decision.
-  Present the proposed action and ask the user to review it in Nebula; they
-  can open the thread interactively with `nebula-ai chat --resume <thread-id>`.
+- `incomplete`: the agent has not finished. Approval requests do not appear
+  in the chat output, so check the thread with
+  `nebula-ai --json channels status <thread-id>`. If `state.turns.work_status`
+  is `waiting`, Nebula needs the user's decision: tell the user and ask them to
+  review it in Nebula; they can open the thread interactively with
+  `nebula-ai chat --resume <thread-id>`. If it is `working`, the agent is
+  still running; read the thread later with `messages` instead of resending.
   Never approve on the user's behalf.
 
 Inspect `events` only when you need execution details; summarize rather than
@@ -128,7 +131,7 @@ paste them. Output field details are in
 ## Out of scope
 
 This skill covers delegation. Unless the user explicitly asks, do not use
-voice calls (`call`), computer control (`local-device`, `install`,
+voice calls (`call`), computer use (`local-device`, `install`,
 `uninstall`), billing, user variables, profile changes, model administration,
 or agent creation and editing. Each changes the user's machine, account, or
 workspace; confirm the exact command with `--help` and get approval first.

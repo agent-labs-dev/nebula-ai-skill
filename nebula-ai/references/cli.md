@@ -1,13 +1,13 @@
 # nebula-ai CLI reference
 
-Commands relevant to delegation in nebula-ai 0.1.9. Prefer `scripts/nebula.sh`
+Commands relevant to delegation in nebula-ai 0.1.10. Prefer `scripts/nebula.sh`
 where it covers a task. For anything else, read the command's `--help` output
 before running it.
 
 ## Install and sign in
 
 ```sh
-npm install --global nebula-ai@0.1.9
+npm install --global nebula-ai@0.1.10
 nebula-ai --version
 nebula-ai login
 nebula-ai status
@@ -30,7 +30,7 @@ Place global options before the command.
 |---|---|
 | `--json` | Machine-readable output where supported. See [json-output.md](json-output.md). |
 | `--no-color` | Disable ANSI colors. |
-| `--workspace <id-or-slug>` | Use this workspace. In 0.1.9 a valid value is also saved as the default, despite the help text saying per-session; an unknown value warns and falls back to the last-used workspace. |
+| `--workspace <id-or-slug>` | Use this workspace for this command only. An unknown value warns and falls back to the last-used workspace. |
 | `--log-level <level>` | `error`, `warn`, `info`, `debug`, or `trace`, written to stderr. |
 
 ## Workspaces
@@ -126,9 +126,11 @@ Reports workspace token usage and cost for 1 to 365 days (default 7).
 | CLI missing | Exit `127` | Offer `scripts/nebula.sh install`. |
 | Not signed in | Wrapper `doctor` exits `3`; CLI commands exit `1` with a sign-in message on stderr | Run `nebula-ai login` and wait for the user. |
 | `doctor` exits `1` | `status` failed for a reason other than sign-in; its error is on stderr | Report the error; do not start a login. |
-| Unknown command or option | Exit `1`, `error: unknown ...` on stderr | Check `--help`; the installed CLI may differ from 0.1.9. |
+| Unknown command or option | Exit `1`, `error: unknown ...` on stderr | Check `--help`; the installed CLI may differ from 0.1.10. |
 | Agent not found | Exit `1` | Re-list agents; do not substitute another. |
 | Run failed or incomplete | Exit `0`, `status` is `failed` or `incomplete` | See the result handling in SKILL.md. |
+| Chat waited 15 minutes | Exit `1`, JSON printed with `status` `incomplete` | Check `channels status`; do not resend. |
+| Chat reply unreadable | Exit `1`, stderr ends with `The message was sent.` | Read the thread with `channels messages`; do not resend. |
 | Network or service error | Exit `1` | Report it once; do not loop. |
 
 Errors are written to stderr as text, not JSON.
