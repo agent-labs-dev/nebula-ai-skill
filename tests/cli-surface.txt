@@ -1,0 +1,1417 @@
+# nebula-ai 0.1.9
+
+===== nebula-ai
+Usage: nebula-ai [options] [command]
+
+CLI/TUI for the nebula.gg AI task orchestration platform
+
+Options:
+  -V, --version             output the version number
+  --api-url <url>           Override API URL
+  --json                    Output raw JSON
+  -v, --verbose             Verbose output (alias for --log-level=debug)
+  --log-level <level>       Log verbosity (error|warn|info|debug|trace)
+  --workspace <id-or-slug>  Workspace to use for this session (overrides stored
+                            preference)
+  --no-color                Disable colors
+  -h, --help                display help for command
+
+Commands:
+  login                     Authenticate with nebula via the device-flow pairing
+  logout                    Clear stored credentials
+  status                    Show CLI status overview
+  usage [options]           Show workspace token usage and cost
+  chat [options] [message]  Send a message to an agent DM and stream the
+                            response
+  call                      Voice calls
+  channels                  Manage channels (threads)
+  agents                    Manage agents
+  user                      View or update user profile and account settings
+  profile                   View or update your user profile
+  local-device              Manage computer control and the local device daemon
+  install [options]         Set up computer control (alias of `local-device
+                            enable`)
+  uninstall [options]       Turn off computer control, stop the daemon, and
+                            remove this device
+  update [options]          Check for a newer CLI version and install it
+  completion <shell>        Generate a shell completion script (bash|zsh|fish)
+  capabilities              Probe and print this host's capability snapshot
+  logs                      Inspect Nebula log files on disk
+  models                    List and manage the models this workspace can use
+  workspace                 Manage workspaces
+  integrations              Connect and manage workspace integrations
+  help [command]            display help for command
+
+===== nebula-ai login
+Usage: nebula-ai login [options]
+
+Authenticate with nebula via the device-flow pairing
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai logout
+Usage: nebula-ai logout [options]
+
+Clear stored credentials
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai status
+Usage: nebula-ai status [options]
+
+Show CLI status overview
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai usage
+Usage: nebula-ai usage [options]
+
+Show workspace token usage and cost
+
+Options:
+  --days <n>  Days to include (1-365) (default: "7")
+  -h, --help  display help for command
+
+===== nebula-ai chat
+Usage: nebula-ai chat [options] [message]
+
+Send a message to an agent DM and stream the response
+
+Arguments:
+  message                    Message to send (omit when using --resume)
+
+Options:
+  -a, --agent <name>         Agent name, slug, or ID (defaults to first active
+                             agent)
+  -c, --channel <id>         Send to a specific channel ID instead of agent DM
+  --context <glob>           Attach files matching a glob pattern (repeatable,
+                             e.g. --context 'src/**/*.ts') (default: [])
+  -r, --resume <channel-id>  Boot the TUI directly into an existing channel (no
+                             message needed)
+  --no-stream                Wait for full response instead of streaming
+  -h, --help                 display help for command
+
+===== nebula-ai call
+Usage: nebula-ai call [options] [command]
+
+Voice calls
+
+Options:
+  -h, --help               display help for command
+
+Commands:
+  start [options]          Start a call (opens the TUI; --json for scripts)
+  list <thread>            List a thread's calls (live first, then recent)
+  status <thread>          Show a thread's live-call status and roster
+  chat [options] <thread>  Send a typed message into a live call
+  leave <thread>           Leave the live call on a thread
+  end <thread>             End the live call on a thread for everyone
+  join [options] <thread>  Join a call (TUI; --headless for engine-only; --json)
+  help [command]           display help for command
+
+===== nebula-ai call start
+Usage: nebula-ai call start [options]
+
+Start a call (opens the TUI; --json for scripts)
+
+Options:
+  --thread <id>    Origin thread that seeds agent context
+  --title <title>  Initial call title
+  --private        Private visibility (default: workspace)
+  -h, --help       display help for command
+
+===== nebula-ai call list
+Usage: nebula-ai call list [options] <thread>
+
+List a thread's calls (live first, then recent)
+
+Arguments:
+  thread      Thread ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai call status
+Usage: nebula-ai call status [options] <thread>
+
+Show a thread's live-call status and roster
+
+Arguments:
+  thread      Thread ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai call chat
+Usage: nebula-ai call chat [options] <thread>
+
+Send a typed message into a live call
+
+Arguments:
+  thread                Thread ID
+
+Options:
+  -m, --message <text>  Message text (reads stdin when omitted)
+  -h, --help            display help for command
+
+===== nebula-ai call leave
+Usage: nebula-ai call leave [options] <thread>
+
+Leave the live call on a thread
+
+Arguments:
+  thread      Thread ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai call end
+Usage: nebula-ai call end [options] <thread>
+
+End the live call on a thread for everyone
+
+Arguments:
+  thread      Thread ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai call join
+Usage: nebula-ai call join [options] <thread>
+
+Join a call (TUI; --headless for engine-only; --json)
+
+Arguments:
+  thread      Thread ID
+
+Options:
+  --headless  Run the audio engine without a TUI
+  --chat      Data-only join (no audio) with --headless
+  --muted     Never publish the mic with --headless
+  -h, --help  display help for command
+
+===== nebula-ai channels
+Usage: nebula-ai channels [options] [command]
+
+Manage channels (threads)
+
+Options:
+  -h, --help               display help for command
+
+Commands:
+  list [options]           List channels
+  create [options]         Create a new channel
+  get <id>                 Get channel details
+  status <id>              Show canonical Thread work status
+  delete <id>              Delete a channel
+  archive <id>             Archive a channel
+  unarchive <id>           Unarchive a channel
+  share <id>               Share a channel
+  messages [options] <id>  List messages in a channel
+  update [options] <id>    Update a channel
+  help [command]           display help for command
+
+===== nebula-ai channels list
+Usage: nebula-ai channels list [options]
+
+List channels
+
+Options:
+  --limit <n>  Max results (default: "20")
+  --archived   Show archived channels
+  -h, --help   display help for command
+
+===== nebula-ai channels create
+Usage: nebula-ai channels create [options]
+
+Create a new channel
+
+Options:
+  -t, --title <title>  Channel title
+  -a, --agent <id>     Agent ID
+  -h, --help           display help for command
+
+===== nebula-ai channels get
+Usage: nebula-ai channels get [options] <id>
+
+Get channel details
+
+Arguments:
+  id          Channel ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels status
+Usage: nebula-ai channels status [options] <id>
+
+Show canonical Thread work status
+
+Arguments:
+  id          Channel ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels delete
+Usage: nebula-ai channels delete [options] <id>
+
+Delete a channel
+
+Arguments:
+  id          Channel ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels archive
+Usage: nebula-ai channels archive [options] <id>
+
+Archive a channel
+
+Arguments:
+  id          Channel ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels unarchive
+Usage: nebula-ai channels unarchive [options] <id>
+
+Unarchive a channel
+
+Arguments:
+  id          Channel ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels share
+Usage: nebula-ai channels share [options] <id>
+
+Share a channel
+
+Arguments:
+  id          Channel ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels messages
+Usage: nebula-ai channels messages [options] <id>
+
+List messages in a channel
+
+Arguments:
+  id           Channel ID
+
+Options:
+  --limit <n>  Max results (default: "50")
+  -h, --help   display help for command
+
+===== nebula-ai channels update
+Usage: nebula-ai channels update [options] <id>
+
+Update a channel
+
+Arguments:
+  id                   Channel ID
+
+Options:
+  -t, --title <title>  New title
+  -h, --help           display help for command
+
+===== nebula-ai agents
+Usage: nebula-ai agents [options] [command]
+
+Manage agents
+
+Options:
+  -h, --help                  display help for command
+
+Commands:
+  list                        List agents
+  create [options]            Create a new agent
+  get <id>                    Get agent details
+  update [options] <id>       Update an agent
+  delete <id>                 Delete an agent
+  logs [options] <id>         Get agent logs
+  errors [options] <id>       Get agent errors
+  enable <id>                 Enable an agent
+  disable <id>                Disable an agent
+  accounts <id>               Show which account an agent acts as, and what else
+                              it could use
+  set-account [options] <id>  Choose which connected account an agent acts as
+  triggers <id>               List triggers for an agent
+  skills                      Manage agent skills
+  help [command]              display help for command
+
+===== nebula-ai agents list
+Usage: nebula-ai agents list [options]
+
+List agents
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai agents create
+Usage: nebula-ai agents create [options]
+
+Create a new agent
+
+Options:
+  -n, --name <name>         Agent name
+  -d, --description <desc>  Agent description
+  -m, --model <model>       Model name
+  -h, --help                display help for command
+
+===== nebula-ai agents get
+Usage: nebula-ai agents get [options] <id>
+
+Get agent details
+
+Arguments:
+  id          Agent ID or slug
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai agents update
+Usage: nebula-ai agents update [options] <id>
+
+Update an agent
+
+Arguments:
+  id                        Agent ID
+
+Options:
+  -n, --name <name>         New name
+  -d, --description <desc>  New description
+  -m, --model <model>       New model
+  -h, --help                display help for command
+
+===== nebula-ai agents delete
+Usage: nebula-ai agents delete [options] <id>
+
+Delete an agent
+
+Arguments:
+  id          Agent ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai agents logs
+Usage: nebula-ai agents logs [options] <id>
+
+Get agent logs
+
+Arguments:
+  id           Agent ID
+
+Options:
+  --limit <n>  Max results (default: "50")
+  -h, --help   display help for command
+
+===== nebula-ai agents errors
+Usage: nebula-ai agents errors [options] <id>
+
+Get agent errors
+
+Arguments:
+  id           Agent ID
+
+Options:
+  --hours <n>  Number of hours to look back (default: "24")
+  -h, --help   display help for command
+
+===== nebula-ai agents enable
+Usage: nebula-ai agents enable [options] <id>
+
+Enable an agent
+
+Arguments:
+  id          Agent ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai agents disable
+Usage: nebula-ai agents disable [options] <id>
+
+Disable an agent
+
+Arguments:
+  id          Agent ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai agents accounts
+Usage: nebula-ai agents accounts [options] <id>
+
+Show which account an agent acts as, and what else it could use
+
+Arguments:
+  id          Agent ID or slug
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai agents set-account
+Usage: nebula-ai agents set-account [options] <id>
+
+Choose which connected account an agent acts as
+
+Arguments:
+  id                          Agent ID
+
+Options:
+  -a, --account <account_id>  Account id to bind (see `nebula integrations
+                              accounts`)
+  -h, --help                  display help for command
+
+===== nebula-ai agents triggers
+Usage: nebula-ai agents triggers [options] <id>
+
+List triggers for an agent
+
+Arguments:
+  id          Agent ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai agents skills
+Usage: nebula-ai agents skills [options] [command]
+
+Manage agent skills
+
+Options:
+  -h, --help                      display help for command
+
+Commands:
+  list <agent-id>                 List skills attached to an agent
+  detach <agent-id> <skill-name>  Detach a skill from an agent
+  help [command]                  display help for command
+
+===== nebula-ai agents skills list
+Usage: nebula-ai agents skills list [options] <agent-id>
+
+List skills attached to an agent
+
+Arguments:
+  agent-id    Agent ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai agents skills detach
+Usage: nebula-ai agents skills detach [options] <agent-id> <skill-name>
+
+Detach a skill from an agent
+
+Arguments:
+  agent-id    Agent ID
+  skill-name  Skill name
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user
+Usage: nebula-ai user [options] [command]
+
+View or update user profile and account settings
+
+Options:
+  -h, --help        display help for command
+
+Commands:
+  update [options]  Update user profile
+  variables         Manage user variables
+  config            Manage CLI configuration
+  devices           Manage your device
+  billing           Manage billing and credits
+  files             Manage files
+
+===== nebula-ai user update
+Usage: nebula-ai user update [options]
+
+Update user profile
+
+Options:
+  -u, --username <name>      New username
+  -d, --display-name <name>  New display name
+  -h, --help                 display help for command
+
+===== nebula-ai user variables
+Usage: nebula-ai user variables [options] [command]
+
+Manage user variables
+
+Options:
+  -h, --help                       display help for command
+
+Commands:
+  list                             List user variables
+  set [options] <name> <value>     Create or update a variable
+  create [options] <name> <value>  Create a new variable
+  delete <name>                    Delete a variable
+  help [command]                   display help for command
+
+===== nebula-ai user variables list
+Usage: nebula-ai user variables list [options]
+
+List user variables
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user variables set
+Usage: nebula-ai user variables set [options] <name> <value>
+
+Create or update a variable
+
+Arguments:
+  name        Variable name
+  value       Variable value
+
+Options:
+  --secret    Mark as secret
+  -h, --help  display help for command
+
+===== nebula-ai user variables create
+Usage: nebula-ai user variables create [options] <name> <value>
+
+Create a new variable
+
+Arguments:
+  name        Variable name
+  value       Variable value
+
+Options:
+  --secret    Mark as secret
+  -h, --help  display help for command
+
+===== nebula-ai user variables delete
+Usage: nebula-ai user variables delete [options] <name>
+
+Delete a variable
+
+Arguments:
+  name        Variable name
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user config
+Usage: nebula-ai user config [options] [command]
+
+Manage CLI configuration
+
+Options:
+  -h, --help         display help for command
+
+Commands:
+  list               List all configuration values
+  get <key>          Get a configuration value
+  set <key> <value>  Set a configuration value
+  reset              Reset all settings to defaults
+  models             List available AI models
+  help [command]     display help for command
+
+===== nebula-ai user config list
+Usage: nebula-ai user config list [options]
+
+List all configuration values
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user config get
+Usage: nebula-ai user config get [options] <key>
+
+Get a configuration value
+
+Arguments:
+  key         Setting key
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user config set
+Usage: nebula-ai user config set [options] <key> <value>
+
+Set a configuration value
+
+Arguments:
+  key         Setting key
+  value       Setting value
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user config reset
+Usage: nebula-ai user config reset [options]
+
+Reset all settings to defaults
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user config models
+Usage: nebula-ai user config models [options]
+
+List available AI models
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user devices
+Usage: nebula-ai user devices [options] [command]
+
+Manage your device
+
+Options:
+  -h, --help                  display help for command
+
+Commands:
+  info                        Get your device info
+  start                       Start your device
+  stop                        Stop your device
+  delete                      Delete your device
+  rename <name>               Rename your device
+  visibility <public>         Set device visibility
+  files [options]             List files on device
+  search [options] <pattern>  Search files on device
+  services                    Manage device services
+  help [command]              display help for command
+
+===== nebula-ai user devices info
+Usage: nebula-ai user devices info [options]
+
+Get your device info
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user devices start
+Usage: nebula-ai user devices start [options]
+
+Start your device
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user devices stop
+Usage: nebula-ai user devices stop [options]
+
+Stop your device
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user devices delete
+Usage: nebula-ai user devices delete [options]
+
+Delete your device
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user devices rename
+Usage: nebula-ai user devices rename [options] <name>
+
+Rename your device
+
+Arguments:
+  name        New device name
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user devices visibility
+Usage: nebula-ai user devices visibility [options] <public>
+
+Set device visibility
+
+Arguments:
+  public      'true' or 'false'
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user devices files
+Usage: nebula-ai user devices files [options]
+
+List files on device
+
+Options:
+  -p, --path <path>  Directory path (default: "/")
+  -h, --help         display help for command
+
+===== nebula-ai user devices search
+Usage: nebula-ai user devices search [options] <pattern>
+
+Search files on device
+
+Arguments:
+  pattern            Filename glob pattern
+
+Options:
+  -p, --path <path>  Directory to search in
+  -h, --help         display help for command
+
+===== nebula-ai user devices services
+Usage: nebula-ai user devices services [options] [command]
+
+Manage device services
+
+Options:
+  -h, --help               display help for command
+
+Commands:
+  list                     List device services
+  get <name>               Get service details
+  create [options] <name>  Create a service
+  start <name>             Start a service
+  stop <name>              Stop a service
+  logs <name>              Get service logs
+  help [command]           display help for command
+
+===== nebula-ai user devices services list
+Usage: nebula-ai user devices services list [options]
+
+List device services
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user devices services get
+Usage: nebula-ai user devices services get [options] <name>
+
+Get service details
+
+Arguments:
+  name        Service name
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user devices services create
+Usage: nebula-ai user devices services create [options] <name>
+
+Create a service
+
+Arguments:
+  name             Service name
+
+Options:
+  --cmd <command>  Command to run
+  --port <port>    HTTP port
+  -h, --help       display help for command
+
+===== nebula-ai user devices services start
+Usage: nebula-ai user devices services start [options] <name>
+
+Start a service
+
+Arguments:
+  name        Service name
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user devices services stop
+Usage: nebula-ai user devices services stop [options] <name>
+
+Stop a service
+
+Arguments:
+  name        Service name
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user devices services logs
+Usage: nebula-ai user devices services logs [options] <name>
+
+Get service logs
+
+Arguments:
+  name        Service name
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user billing
+Usage: nebula-ai user billing [options] [command]
+
+Manage billing and credits
+
+Options:
+  -h, --help            display help for command
+
+Commands:
+  balance               Get your credit balance
+  history [options]     Get credit transaction history
+  auto-topup [options]  Get or update auto top-up settings
+  help [command]        display help for command
+
+===== nebula-ai user billing balance
+Usage: nebula-ai user billing balance [options]
+
+Get your credit balance
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user billing history
+Usage: nebula-ai user billing history [options]
+
+Get credit transaction history
+
+Options:
+  --limit <n>  Max results (default: "20")
+  -h, --help   display help for command
+
+===== nebula-ai user billing auto-topup
+Usage: nebula-ai user billing auto-topup [options]
+
+Get or update auto top-up settings
+
+Options:
+  --enable               Enable auto top-up
+  --disable              Disable auto top-up
+  --threshold <dollars>  Threshold in dollars
+  --amount <dollars>     Top-up amount in dollars
+  -h, --help             display help for command
+
+===== nebula-ai user files
+Usage: nebula-ai user files [options] [command]
+
+Manage files
+
+Options:
+  -h, --help               display help for command
+
+Commands:
+  list [options]           List files
+  get <id>                 Get file details
+  content <id>             Get file content (text)
+  delete <id>              Delete a file
+  share <id>               Create a shared link for a file
+  folders                  List folders
+  upload [options] <path>  Upload a file
+  download [options] <id>  Download a file
+  help [command]           display help for command
+
+===== nebula-ai user files list
+Usage: nebula-ai user files list [options]
+
+List files
+
+Options:
+  --folder <id>  Folder ID
+  --limit <n>    Max results (default: "20")
+  -h, --help     display help for command
+
+===== nebula-ai user files get
+Usage: nebula-ai user files get [options] <id>
+
+Get file details
+
+Arguments:
+  id          File ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user files content
+Usage: nebula-ai user files content [options] <id>
+
+Get file content (text)
+
+Arguments:
+  id          File ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user files delete
+Usage: nebula-ai user files delete [options] <id>
+
+Delete a file
+
+Arguments:
+  id          File ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user files share
+Usage: nebula-ai user files share [options] <id>
+
+Create a shared link for a file
+
+Arguments:
+  id          File ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user files folders
+Usage: nebula-ai user files folders [options]
+
+List folders
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai user files upload
+Usage: nebula-ai user files upload [options] <path>
+
+Upload a file
+
+Arguments:
+  path           File path to upload
+
+Options:
+  --folder <id>  Target folder ID
+  -h, --help     display help for command
+
+===== nebula-ai user files download
+Usage: nebula-ai user files download [options] <id>
+
+Download a file
+
+Arguments:
+  id                   File ID
+
+Options:
+  -o, --output <path>  Output file path
+  -h, --help           display help for command
+
+===== nebula-ai profile
+Usage: nebula-ai profile [options] [command]
+
+View or update your user profile
+
+Options:
+  -h, --help            display help for command
+
+Commands:
+  get                   Show your profile
+  set [options]         Update profile fields
+  set-email <address>   Send a verification code to a new email address
+  verify-email <code>   Confirm a pending email change with the code you were
+                        sent
+  upload-avatar <path>  Upload a profile image
+  help [command]        display help for command
+
+===== nebula-ai profile get
+Usage: nebula-ai profile get [options]
+
+Show your profile
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai profile set
+Usage: nebula-ai profile set [options]
+
+Update profile fields
+
+Options:
+  -u, --username <name>  New username (@-handle)
+  -n, --name <name>      New display name (split into first / last)
+  -e, --email <email>    Deprecated — use `profile set-email`
+  --timezone <tz>        New timezone (IANA name, e.g. America/New_York)
+  -h, --help             display help for command
+
+===== nebula-ai profile set-email
+Usage: nebula-ai profile set-email [options] <address>
+
+Send a verification code to a new email address
+
+Arguments:
+  address     Email address to switch to
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai profile verify-email
+Usage: nebula-ai profile verify-email [options] <code>
+
+Confirm a pending email change with the code you were sent
+
+Arguments:
+  code        6-digit code from the verification email
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai profile upload-avatar
+Usage: nebula-ai profile upload-avatar [options] <path>
+
+Upload a profile image
+
+Arguments:
+  path        Path to an image file
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai local-device
+Usage: nebula-ai local-device [options] [command]
+
+Manage computer control and the local device daemon
+
+Options:
+  -h, --help        display help for command
+
+Commands:
+  enable [options]  Turn on computer control: sign in, use this folder as the
+                    working folder, register this device, and start the daemon
+  disable           Turn off computer control and stop the daemon
+  status            Show computer-control and daemon status
+  logs [options]    View daemon logs
+  start             Start the daemon
+  stop              Stop the daemon
+  restart           Restart the daemon
+  exec-mode         Manage whether the agent can run commands on the host
+  help [command]    display help for command
+
+===== nebula-ai local-device enable
+Usage: nebula-ai local-device enable [options]
+
+Turn on computer control: sign in, use this folder as the working folder,
+register this device, and start the daemon
+
+Options:
+  --source <name>          Metadata source for this install (default: "cli")
+  --primary-folder <path>  Override the working folder instead of using the
+                           current directory
+  -h, --help               display help for command
+
+===== nebula-ai local-device disable
+Usage: nebula-ai local-device disable [options]
+
+Turn off computer control and stop the daemon
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai local-device status
+Usage: nebula-ai local-device status [options]
+
+Show computer-control and daemon status
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai local-device logs
+Usage: nebula-ai local-device logs [options]
+
+View daemon logs
+
+Options:
+  -n, --lines <count>  Number of lines to show (default: "50")
+  -f, --follow         Follow log output
+  -h, --help           display help for command
+
+===== nebula-ai local-device start
+Usage: nebula-ai local-device start [options]
+
+Start the daemon
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai local-device stop
+Usage: nebula-ai local-device stop [options]
+
+Stop the daemon
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai local-device restart
+Usage: nebula-ai local-device restart [options]
+
+Restart the daemon
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai local-device exec-mode
+Usage: nebula-ai local-device exec-mode [options] [command]
+
+Manage whether the agent can run commands on the host
+
+Options:
+  -h, --help      display help for command
+
+Commands:
+  get             Show the current execution mode
+  set <mode>      Set the execution mode for exec RPCs
+  help [command]  display help for command
+
+===== nebula-ai local-device exec-mode get
+Usage: nebula-ai local-device exec-mode get [options]
+
+Show the current execution mode
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai local-device exec-mode set
+Usage: nebula-ai local-device exec-mode set [options] <mode>
+
+Set the execution mode for exec RPCs
+
+Arguments:
+  mode        One of: host, none
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai install
+Usage: nebula-ai install [options]
+
+Set up computer control (alias of `local-device enable`)
+
+Options:
+  --source <name>          Metadata source for this install (default: "cli")
+  --primary-folder <path>  Override the working folder instead of using the
+                           current directory
+  -h, --help               display help for command
+
+===== nebula-ai uninstall
+Usage: nebula-ai uninstall [options]
+
+Turn off computer control, stop the daemon, and remove this device
+
+Options:
+  --keep-data  Keep configuration and log files
+  -h, --help   display help for command
+
+===== nebula-ai update
+Usage: nebula-ai update [options]
+
+Check for a newer CLI version and install it
+
+Options:
+  --check     Check without installing
+  -h, --help  display help for command
+
+===== nebula-ai completion
+Usage: nebula-ai completion [options] <shell>
+
+Generate a shell completion script (bash|zsh|fish)
+
+Arguments:
+  shell       Target shell — one of: bash, zsh, fish
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai capabilities
+Usage: nebula-ai capabilities [options]
+
+Probe and print this host's capability snapshot
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai logs
+Usage: nebula-ai logs [options] [command]
+
+Inspect Nebula log files on disk
+
+Options:
+  -h, --help      display help for command
+
+Commands:
+  path            Print the path to ~/.nebula/logs/
+  help [command]  display help for command
+
+===== nebula-ai logs path
+Usage: nebula-ai logs path [options]
+
+Print the path to ~/.nebula/logs/
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai models
+Usage: nebula-ai models [options] [command]
+
+List and manage the models this workspace can use
+
+Options:
+  -h, --help        display help for command
+
+Commands:
+  list              List selectable models (Nebula tiers, curated, custom)
+  default [model]   Show or set the workspace default model (admin only)
+  curate [options]  Show or change which vendor models the workspace offers
+  custom            Manage bring-your-own models
+  help [command]    display help for command
+
+===== nebula-ai models list
+Usage: nebula-ai models list [options]
+
+List selectable models (Nebula tiers, curated, custom)
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai models default
+Usage: nebula-ai models default [options] [model]
+
+Show or set the workspace default model (admin only)
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai models curate
+Usage: nebula-ai models curate [options]
+
+Show or change which vendor models the workspace offers
+
+Options:
+  --add <ids...>     Add models to the curated list
+  --remove <ids...>  Remove models from the curated list
+  -h, --help         display help for command
+
+===== nebula-ai models custom
+Usage: nebula-ai models custom [options] [command]
+
+Manage bring-your-own models
+
+Options:
+  -h, --help            display help for command
+
+Commands:
+  list                  List custom models visible in this workspace
+  add [options] <name>  Add a custom model
+  remove <model-id>     Delete a custom model you own (e.g. custom:cm_abc)
+  help [command]        display help for command
+
+===== nebula-ai models custom list
+Usage: nebula-ai models custom list [options]
+
+List custom models visible in this workspace
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai models custom add
+Usage: nebula-ai models custom add [options] <name>
+
+Add a custom model
+
+Options:
+  --alias <model-id>    Create a routing alias to a catalog model
+  --base-url <url>      OpenAI-compatible endpoint
+  --model-id <id>       Model id to send upstream
+  --auth <value>        Authorization header value
+  --device <device-id>  Lock this model to a device
+  --share               Make it visible to the whole workspace
+  -h, --help            display help for command
+
+===== nebula-ai models custom remove
+Usage: nebula-ai models custom remove [options] <model-id>
+
+Delete a custom model you own (e.g. custom:cm_abc)
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai workspace
+Usage: nebula-ai workspace [options] [command]
+
+Manage workspaces
+
+Options:
+  -h, --help               display help for command
+
+Commands:
+  list                     List your workspaces
+  switch <workspace>       Switch to a different workspace (by ID or slug)
+  create [options] <name>  Create a new workspace
+  help [command]           display help for command
+
+===== nebula-ai workspace list
+Usage: nebula-ai workspace list [options]
+
+List your workspaces
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai workspace switch
+Usage: nebula-ai workspace switch [options] <workspace>
+
+Switch to a different workspace (by ID or slug)
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai workspace create
+Usage: nebula-ai workspace create [options] <name>
+
+Create a new workspace
+
+Options:
+  --slug <slug>  Custom slug (auto-generated from name if omitted)
+  -h, --help     display help for command
+
+===== nebula-ai integrations
+Usage: nebula-ai integrations [options] [command]
+
+Connect and manage workspace integrations
+
+Options:
+  -h, --help                         display help for command
+
+Commands:
+  list                               List integration connections
+  connect <provider>                 Connect a workspace integration
+  disconnect <provider> [accountId]  Disconnect a workspace integration account
+  help [command]                     display help for command
+
+===== nebula-ai integrations list
+Usage: nebula-ai integrations list [options]
+
+List integration connections
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai integrations connect
+Usage: nebula-ai integrations connect [options] <provider>
+
+Connect a workspace integration
+
+Arguments:
+  provider    Toolkit slug to connect
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai integrations disconnect
+Usage: nebula-ai integrations disconnect [options] <provider> [accountId]
+
+Disconnect a workspace integration account
+
+Arguments:
+  provider    Bot to disconnect (see `integrations list`)
+  accountId   Account/install id (required if more than one)
+
+Options:
+  -h, --help  display help for command
