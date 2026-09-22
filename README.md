@@ -12,6 +12,7 @@ credentials.
 
 | Skill | nebula-ai CLI |
 |---|---|
+| 0.4.0 | 0.1.10 |
 | 0.3.0 | 0.1.10 |
 | 0.2.0 | 0.1.9 |
 
@@ -35,7 +36,6 @@ metadata for clients that read it.
 
 ## Requirements
 
-- A POSIX shell
 - Node.js 18 or later with npm
 - A Nebula account and network access to nebula.gg
 
@@ -68,7 +68,7 @@ changes, and workspace administration, and asks before using them.
 - Local files are uploaded only when the user asks for that disclosure.
 
 Agent skills run commands with the permissions of the host agent. Review
-`nebula-ai/SKILL.md` and `nebula-ai/scripts/nebula.sh` before installing. To
+`nebula-ai/SKILL.md` before installing. To
 report a vulnerability, see [SECURITY.md](SECURITY.md).
 
 ## Contributing
