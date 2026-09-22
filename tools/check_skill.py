@@ -247,6 +247,14 @@ def check_versions(root: Path, report) -> None:
         report("tests/cli-surface.txt", 1, f"snapshot header must name nebula-ai {pin}")
     if not re.search(rf"(?<![\w.]){re.escape(pin)}(?![\w.])", (root / "README.md").read_text()):
         report("README.md", 1, f"must contain supported CLI version {pin}")
+    # Explicit package pins in current docs must match; CHANGELOG.md is history.
+    docs = [root / "README.md", root / "CONTRIBUTING.md", root / "nebula-ai/SKILL.md",
+            *sorted((root / "nebula-ai/references").glob("*.md"))]
+    for doc in docs:
+        for number, line in enumerate(doc.read_text().splitlines(), 1):
+            for version in re.findall(r"nebula-ai@([\w.-]+)", line):
+                if version != pin:
+                    report(doc.relative_to(root), number, f"nebula-ai@{version} must be nebula-ai@{pin}")
 
 
 def check_public_text(root: Path, report) -> int:

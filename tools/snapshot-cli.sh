@@ -52,14 +52,15 @@ def invoke(*args):
     command = [binary, "--json", *args]
     try:
         result = subprocess.run(
-            ["timeout", "30", *command], stdin=subprocess.DEVNULL,
-            capture_output=True, text=True, env=env, check=False,
+            command, stdin=subprocess.DEVNULL, capture_output=True, text=True,
+            env=env, check=False, timeout=30,
         )
+    except subprocess.TimeoutExpired as exc:
+        raise SystemExit(f"{' '.join(command)}: timed out after 30 seconds") from exc
     except OSError as exc:
         raise SystemExit(f"Cannot run {' '.join(command)}: {exc}") from exc
     if result.returncode:
-        reason = "timed out after 30 seconds" if result.returncode == 124 else f"exited {result.returncode}"
-        raise SystemExit(f"{' '.join(command)}: {reason}\n{result.stderr}{result.stdout}")
+        raise SystemExit(f"{' '.join(command)}: exited {result.returncode}\n{result.stderr}{result.stdout}")
     return "\n".join(line.rstrip() for line in ansi.sub("", result.stdout).splitlines()).strip("\n")
 
 

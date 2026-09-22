@@ -15,9 +15,11 @@ Use `nebula-ai` as a delegation boundary. The local agent sends a task to a
 specialized Nebula agent; Nebula acts through the accounts authorized in the
 user's workspace. Never request, copy, print, or export provider credentials.
 
-Run the bundled wrapper, `scripts/nebula.sh`, from this skill's directory. It
-pins JSON output, rejects malformed arguments, and uses stable exit codes. Use
-the raw CLI only for commands the wrapper does not cover; see
+Use the bundled wrapper, `scripts/nebula.sh`. It pins JSON output, rejects
+malformed arguments, and uses stable exit codes. Invoke it by its path inside
+this skill's directory while staying in the user's working directory, because
+relative `--context` globs resolve against the current directory. Use the raw
+CLI only for commands the wrapper does not cover; see
 [references/cli.md](references/cli.md).
 
 ## Prepare
@@ -69,8 +71,9 @@ the raw CLI only for commands the wrapper does not cover; see
    timeout or interruption read the thread (see below) instead of resending,
    which could repeat a write.
 4. Attach local files only when the user asked for that exact disclosure:
-   `--context "<glob>"`, repeatable, quoted so the CLI expands it. Uploads
-   are limited to 50 files and 512 KiB in total.
+   `--context "<glob>"`, repeatable, quoted so the CLI expands it relative to
+   the current directory. Uploads are limited to 50 files and 512 KiB in
+   total.
 
 ## Check the result
 

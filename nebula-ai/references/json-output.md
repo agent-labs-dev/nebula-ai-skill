@@ -54,7 +54,7 @@ use the chat `events` to detect them.
 
 ## Commands without JSON output
 
-`login`, `logout`, `update`, `workspace switch`, `workspace create`, and
+`login`, `update`, `workspace switch`, `workspace create`, and
 `integrations connect` print human-readable text even with `--json`. Do not
 parse their output; rely on the exit code and re-read state with a listing
-command.
+command. `logout` prints `null` on success.

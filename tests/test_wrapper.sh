@@ -201,6 +201,11 @@ run_case 'messages limit missing value' 2 messages --limit
 run_case 'chat agent missing value' 2 chat --agent
 run_case 'chat thread missing value' 2 chat --thread
 run_case 'chat context missing value' 2 chat --context
+run_case 'chat empty thread' 2 chat --thread '' -- message
+run_case 'chat empty agent' 2 chat --agent '' -- message
+newline_glob='report
+secret.txt'
+run_case 'chat newline context' 2 chat --context "$newline_glob" -- message
 run_case 'chat agent and thread conflict' 2 chat --agent agent --thread thread -- message
 expected --json --no-color chat --no-stream -- message
 run_case 'chat without separator' 0 chat message

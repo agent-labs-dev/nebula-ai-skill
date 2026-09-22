@@ -21,7 +21,7 @@ usage() {
         "  nebula.sh chat [--workspace ID_OR_SLUG] [--agent NAME_OR_SLUG | --thread THREAD_ID]" \
         "                 [--context GLOB]... -- MESSAGE" \
         "" \
-        "Exit codes: 0 ok, 1 CLI error, 2 usage error, 3 not signed in, 127 missing dependency."
+        "Exit codes: 0 ok, 1 CLI error, 2 usage error, 3 not signed in (doctor), 127 missing dependency."
 }
 
 usage_error() {
@@ -53,7 +53,9 @@ parse_options() {
         case "$1" in
             --workspace|--agent|--thread|--limit|--context)
                 case " $allowed " in *" $1 "*) ;; *) usage_error "unsupported option: $1" ;; esac
-                [ "$#" -ge 2 ] || usage_error "$1 requires a value"
+                [ "$#" -ge 2 ] && [ -n "$2" ] || usage_error "$1 requires a non-empty value"
+                case "$2" in *'
+'*) usage_error "$1 value must not contain a newline" ;; esac
                 case "$1" in
                     --workspace) workspace=$2 ;;
                     --agent) agent=$2 ;;
