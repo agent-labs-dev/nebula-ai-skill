@@ -310,14 +310,6 @@ def main() -> int:
                     error = validate_argv(argv, tree)
                     if error:
                         report(file.relative_to(ROOT), line, error)
-        log = ROOT / "tests/.wrapper-argv.log"
-        if log.exists():
-            for line, entry in enumerate(log.read_text().split("\n"), 1):
-                if entry:
-                    count += 1
-                    error = validate_argv(entry.split("\x1f"), tree)
-                    if error:
-                        report(log.relative_to(ROOT), line, error)
         tracked = check_public_text(ROOT, report)
     except (OSError, ValueError, IndexError, subprocess.CalledProcessError) as exc:
         print(f"check_skill: {exc}", file=sys.stderr)

@@ -37,10 +37,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.11'
-      - name: Test wrapper
-        run: sh tests/test_wrapper.sh
       - name: Check CLI examples and public text
-        if: ${{ !cancelled() }}
         run: python3 tools/check_skill.py
 
   cli-surface:

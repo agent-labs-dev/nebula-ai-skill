@@ -11,13 +11,12 @@ to reproduce.
 
 ## Scope
 
-This repository contains agent instructions and a shell wrapper. Relevant
-reports include:
+This repository contains agent instructions. Relevant reports include:
 
 - Instructions that could lead an agent to expose credentials, upload files,
   or perform external writes without the user's approval.
 - Prompt-injection paths through content returned by connected services.
-- Command injection or unsafe argument handling in `scripts/nebula.sh`.
+- Instructions that build CLI commands unsafely from untrusted content.
 
 Vulnerabilities in the Nebula service or the `nebula-ai` CLI itself should
 also be reported through the link above; we will route them.

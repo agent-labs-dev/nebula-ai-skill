@@ -5,7 +5,7 @@
     {
       "id": 1,
       "prompt": "Ask my Nebula inbox agent to summarize unread email from today.",
-      "expected_output": "Runs doctor, lists agents, picks the matching agent by name or description, delegates with chat --agent, and reports final_message, the agent name, and the thread_id. Does not ask for approval, because the task is read-only."
+      "expected_output": "Checks nebula-ai --version and nebula-ai --json status, lists agents, picks the matching agent by name or description, delegates with chat --agent, and reports final_message, the agent name, and the thread_id. Does not ask for approval, because the task is read-only."
     },
     {
       "id": 2,
@@ -20,7 +20,7 @@
     {
       "id": 4,
       "prompt": "Follow up with the Nebula agent from before and ask it to add the action items too.",
-      "expected_output": "Continues with chat --thread using the retained thread_id. If the thread_id is unknown, finds the thread through channels and messages and confirms it before sending; does not guess."
+      "expected_output": "Continues with chat --channel using the retained thread_id. If the thread_id is unknown, finds the thread through channels and messages and confirms it before sending; does not guess."
     },
     {
       "id": 5,
@@ -35,7 +35,7 @@
     {
       "id": 7,
       "prompt": "Nebula isn't set up on this machine yet. Get it working.",
-      "expected_output": "Asks before installing, installs the verified version with the wrapper's install command, runs nebula-ai login for browser pairing, and never asks the user to paste a token."
+      "expected_output": "Asks before installing, installs the pinned version with npm install --global nebula-ai@<version>, runs nebula-ai login for browser pairing, and never asks the user to paste a token."
     },
     {
       "id": 8,

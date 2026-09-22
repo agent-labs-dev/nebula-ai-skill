@@ -4,6 +4,21 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the skill uses
 [Semantic Versioning](https://semver.org).
 
+## [0.4.0] - 2026-09-22
+
+Verified against nebula-ai CLI 0.1.10.
+
+### Removed
+
+- The `scripts/nebula.sh` wrapper and its tests. The skill now runs
+  `nebula-ai --json` commands directly, and CI validates each documented
+  command against the CLI's help snapshot.
+
+### Changed
+
+- Sign-in is checked with `nebula-ai --json status` and the installed version
+  with `nebula-ai --version`.
+
 ## [0.3.0] - 2026-09-22
 
 Verified against nebula-ai CLI 0.1.10.

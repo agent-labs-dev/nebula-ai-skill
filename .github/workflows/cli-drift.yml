@@ -51,8 +51,8 @@ jobs:
 
           1. Review the release and update nebula-ai/cli-version, the skill metadata and compatibility string, and README.md.
           2. Run tools/snapshot-cli.sh and review the command and option changes.
-          3. Update the wrapper, reference examples, and tests for the supported CLI.
-          4. Run sh tests/test_wrapper.sh, python3 tools/check_skill.py, tools/snapshot-cli.sh --check, shellcheck, and the Agent Skills validator. Submit the upgrade for review.
+          3. Update the skill instructions and reference examples for the supported CLI.
+          4. Run python3 tools/check_skill.py, tools/snapshot-cli.sh --check, shellcheck, and the Agent Skills validator. Submit the upgrade for review.
 
           Detected by [CLI drift]($RUN_URL).
           EOF
