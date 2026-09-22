@@ -53,7 +53,7 @@ parse_options() {
         case "$1" in
             --workspace|--agent|--thread|--limit|--context)
                 case " $allowed " in *" $1 "*) ;; *) usage_error "unsupported option: $1" ;; esac
-                [ "$#" -ge 2 ] && [ -n "$2" ] || usage_error "$1 requires a non-empty value"
+                if [ "$#" -lt 2 ] || [ -z "$2" ]; then usage_error "$1 requires a non-empty value"; fi
                 case "$2" in *'
 '*) usage_error "$1 value must not contain a newline" ;; esac
                 case "$1" in
@@ -141,20 +141,20 @@ case "$command_name" in
         ;;
     accounts)
         parse_options "--workspace" "$@"
-        [ "$positional_count" -eq 1 ] && [ -n "$positional" ] || usage_error "accounts requires AGENT"
+        if [ "$positional_count" -ne 1 ] || [ -z "$positional" ]; then usage_error "accounts requires AGENT"; fi
         require_cli
         run_cli agents accounts "$positional"
         ;;
     messages)
         parse_options "--workspace --limit" "$@"
-        [ "$positional_count" -eq 1 ] && [ -n "$positional" ] || usage_error "messages requires THREAD_ID"
+        if [ "$positional_count" -ne 1 ] || [ -z "$positional" ]; then usage_error "messages requires THREAD_ID"; fi
         case "$limit" in '' | 0 | *[!0-9]*) usage_error "--limit must be a positive integer" ;; esac
         require_cli
         run_cli channels messages --limit "$limit" "$positional"
         ;;
     chat)
         parse_options "--workspace --agent --thread --context" "$@"
-        [ "$positional_count" -eq 1 ] && [ -n "$positional" ] || usage_error "chat requires one MESSAGE after --"
+        if [ "$positional_count" -ne 1 ] || [ -z "$positional" ]; then usage_error "chat requires one MESSAGE after --"; fi
         [ -z "$agent" ] || [ -z "$thread" ] || usage_error "use --agent or --thread, not both"
         require_cli
         message=$positional
