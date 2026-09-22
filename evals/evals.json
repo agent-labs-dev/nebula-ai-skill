@@ -25,7 +25,7 @@
     {
       "id": 5,
       "prompt": "Ask Nebula to create the Linear issues we discussed.",
-      "expected_output": "Gets approval for the write, delegates, and if the result status is incomplete, checks channels status and, when work_status is waiting, asks the user to review the request in Nebula. Never approves on the user's behalf."
+      "expected_output": "Gets approval for the write, delegates, and if the result status is waiting (exit 4), tells the user what pending asks and has them review it in Nebula. If the status is incomplete, checks channels status instead of resending. Never approves on the user's behalf."
     },
     {
       "id": 6,

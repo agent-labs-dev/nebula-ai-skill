@@ -2,11 +2,11 @@
 name: nebula-ai
 description: Install and use the Nebula AI CLI to delegate tasks to specialized Nebula agents and work through user-authorized services such as Gmail, Slack, GitHub, Linear, and calendars without exposing service credentials. Use when the user asks to use Nebula, contact or delegate to a Nebula agent, inspect Nebula channels or threads, continue delegated work, or act through an account connected to their Nebula workspace.
 license: MIT
-compatibility: Requires the nebula-ai CLI 0.1.10 (npm package nebula-ai), Node.js 18 or later, and network access to nebula.gg. Signing in opens a browser.
+compatibility: Requires the nebula-ai CLI 0.1.11 (npm package nebula-ai), Node.js 18 or later, and network access to nebula.gg. Signing in opens a browser.
 metadata:
   author: Agent Labs
-  version: "0.4.0"
-  cli-version: "0.1.10"
+  version: "0.5.0"
+  cli-version: "0.1.11"
 ---
 
 # Nebula AI
@@ -26,15 +26,15 @@ before running anything else.
 1. Run `nebula-ai --version`.
    - Command not found: the CLI is missing. Ask before changing the machine,
      then install the verified version with
-     `npm install --global nebula-ai@0.1.10`.
-   - A version other than `0.1.10`: continue, but tell the user if a command
+     `npm install --global nebula-ai@0.1.11`.
+   - A version other than `0.1.11`: continue, but tell the user if a command
      or output shape does not match this guide. Do not upgrade or downgrade
      the CLI without approval.
 2. Run `nebula-ai --json status`.
-   - Exit `0` with `auth.logged_in` true: ready.
-   - `auth.logged_in` false, or exit `1` with a message that mentions
-     `nebula-ai login`: run `nebula-ai login` and let the user finish the
-     browser pairing. Never ask the user to paste a token or API key.
+   - Exit `0`: ready.
+   - Exit `3` (`auth.logged_in` false): run `nebula-ai login` and let the
+     user finish the browser pairing. Never ask the user to paste a token or
+     API key.
    - Any other failure: report the error; do not start a login.
 3. If the user names a workspace, confirm it appears in
    `nebula-ai --json workspace list` before passing
@@ -70,12 +70,12 @@ before running anything else.
    nebula-ai --json chat --no-stream --agent "<agent-slug>" -- "<task>"
    ```
 
-   The call blocks until the agent finishes, for up to 15 minutes. Allow a
-   timeout of at least that long. The task is sent before the wait begins, so
-   after a timeout, an interruption, or an error ending in
-   `The message was sent.`, read the thread (see below) instead of resending,
-   which could repeat a write. Other errors, such as an unknown agent or no
-   workspace, happen before sending; fix the cause and try again.
+   The call blocks until the agent finishes or needs the user, for up to 15
+   minutes. Allow a timeout of at least that long. Exit `5`, or your own
+   timeout or interruption, means the task was sent but its outcome is
+   unknown: read the thread (see below) instead of resending, which could
+   repeat a write. An error that prints no result, such as an unknown agent
+   or no workspace, happens before sending; fix the cause and try again.
 4. Attach local files only when the user asked for that exact disclosure:
    `--context "<glob>"`, repeatable, quoted so the CLI expands it relative to
    the current directory. Uploads are limited to 50 files and 512 KiB in
@@ -83,22 +83,31 @@ before running anything else.
 
 ## Check the result
 
-`chat` prints one JSON object: `thread_id`, `agent`, `status`,
-`final_message`, and `events`. A zero exit code does not mean success; read
-`status`. If the CLI waited the full 15 minutes, it prints the object with
-`status` set to `incomplete` and exits `1`.
+`chat` prints one JSON object on stdout: `thread_id`, `agent`, `status`,
+`final_message`, `events`, and `pending`. Once the reply can be read, it
+prints the object whatever the exit code, so read `status` rather than
+relying on exit `0`.
 
-- `completed`: report `final_message`, name the Nebula agent that did the
-  work, and keep `thread_id` for follow-ups.
-- `failed`: report the failure once. Do not retry a write without asking.
-- `incomplete`: the agent has not finished. Approval requests do not appear
-  in the chat output, so check the thread with
-  `nebula-ai --json channels status <thread-id>`. If `state.turns.work_status`
-  is `waiting`, Nebula needs the user's decision: tell the user and ask them to
-  review it in Nebula; they can open the thread interactively with
-  `nebula-ai chat --resume <thread-id>`. If it is `working`, the agent is
-  still running; read the thread later instead of resending.
+- `completed` (exit `0`): report `final_message`, name the Nebula agent that
+  did the work, and keep `thread_id` for follow-ups.
+- `failed` (exit `1`): report the failure once. Do not retry a write without
+  asking.
+- `waiting` (exit `4`): Nebula needs the user's decision, described by
+  `pending` (`kind`, `title`, `summary`). Tell the user what it asks and have
+  them review it in Nebula; they can open the thread interactively with
+  `nebula-ai chat --resume <thread-id>`. The agent is paused, not stopped.
   Never approve on the user's behalf.
+- `incomplete` (exit `5`): the agent had not finished when the CLI stopped
+  waiting. Check `nebula-ai --json channels status <thread-id>`: if
+  `state.turns.work_status` is `working`, read the thread later; if it is
+  `waiting`, handle it as above. Do not resend.
+
+With `--json`, failures print one line on stderr,
+`{"error":{"code":"...","message":"..."}}`, with no result on stdout. A
+`code` of `auth_required` (exit `3`) means sign in again with
+`nebula-ai login`. `outcome_unknown` (exit `5`) means the task was sent but
+the reply could not be read: read the thread, do not resend. Report any other
+error once.
 
 Inspect `events` only when you need execution details; summarize rather than
 paste them. Output field details are in

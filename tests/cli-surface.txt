@@ -1,4 +1,4 @@
-# nebula-ai 0.1.10
+# nebula-ai 0.1.11
 
 ===== nebula-ai
 Usage: nebula-ai [options] [command]

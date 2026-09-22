@@ -4,6 +4,21 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the skill uses
 [Semantic Versioning](https://semver.org).
 
+## [0.5.0] - 2026-09-22
+
+Verified against nebula-ai CLI 0.1.11.
+
+### Changed
+
+- `chat` exit codes now carry the outcome: `0` completed, `1` failed, `4`
+  waiting for the user, `5` sent but the outcome is unknown (the 15-minute
+  wait, an interruption, or an unreadable reply).
+- A turn that needs the user's decision is reported by `chat` itself, with
+  `status` `waiting` and the request in the new `pending` field.
+- `status` exits `3` when signed out, and still prints its JSON object.
+- `--json` failures are documented as one JSON line on stderr with an error
+  `code`.
+
 ## [0.4.0] - 2026-09-22
 
 Verified against nebula-ai CLI 0.1.10.
