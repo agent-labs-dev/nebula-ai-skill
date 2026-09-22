@@ -1,0 +1,66 @@
+name: CLI drift
+
+on:
+  schedule:
+    - cron: '23 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: cli-drift
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+      - name: Report a newer CLI release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          pin=$(cat nebula-ai/cli-version)
+          latest=$(npm view nebula-ai dist-tags.latest)
+          if [ "$latest" = "$pin" ]; then
+            printf 'nebula-ai %s is current.\n' "$pin"
+            exit 0
+          fi
+          if ! [[ "$latest" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+            printf '::error::Unexpected npm version: %s\n' "$latest"
+            exit 1
+          fi
+          title="nebula-ai $latest is available"
+          labels=$(gh label list --search cli-drift --json name --jq '.[].name')
+          if ! printf '%s\n' "$labels" | grep -Fxq cli-drift; then
+            gh label create cli-drift --color D93F0B --description 'Supported CLI version updates'
+          fi
+          body_file=$(mktemp)
+          trap 'rm -f "$body_file"' EXIT
+          cat > "$body_file" <<EOF
+          npm now publishes nebula-ai **$latest**; this repository supports **$pin**.
+
+          Follow [Updating the supported CLI version](https://github.com/$GH_REPO/blob/main/CONTRIBUTING.md#updating-the-supported-cli-version):
+
+          1. Review the release and update nebula-ai/cli-version, the skill metadata and compatibility string, and README.md.
+          2. Run tools/snapshot-cli.sh and review the command and option changes.
+          3. Update the wrapper, reference examples, and tests for the supported CLI.
+          4. Run sh tests/test_wrapper.sh, python3 tools/check_skill.py, tools/snapshot-cli.sh --check, shellcheck, and the Agent Skills validator. Submit the upgrade for review.
+
+          Detected by [CLI drift]($RUN_URL).
+          EOF
+          issue_number=$(gh issue list --state open --label cli-drift --search "$title in:title" --limit 100 --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -n 1)
+          if [ -n "$issue_number" ]; then
+            printf 'Issue #%s already tracks nebula-ai %s.\n' "$issue_number" "$latest"
+          else
+            gh issue create --title "$title" --label cli-drift --body-file "$body_file"
+          fi
+          printf '::error::nebula-ai %s is available. Follow CONTRIBUTING.md "Updating the supported CLI version".\n' "$latest"
+          exit 1
