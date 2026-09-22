@@ -70,8 +70,10 @@ CLI only for commands the wrapper does not cover; see
 
    The call blocks until the agent finishes, for up to 15 minutes. Allow a
    timeout of at least that long. The task is sent before the wait begins, so
-   after a timeout, an interruption, or a non-zero exit read the thread (see
-   below) instead of resending, which could repeat a write.
+   after a timeout, an interruption, or an error ending in
+   `The message was sent.`, read the thread (see below) instead of resending,
+   which could repeat a write. Other errors, such as an unknown agent or no
+   workspace, happen before sending; fix the cause and try again.
 4. Attach local files only when the user asked for that exact disclosure:
    `--context "<glob>"`, repeatable, quoted so the CLI expands it relative to
    the current directory. Uploads are limited to 50 files and 512 KiB in
