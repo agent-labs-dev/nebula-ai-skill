@@ -74,8 +74,9 @@ before running anything else.
    minutes. Allow a timeout of at least that long. Exit `5`, or your own
    timeout or interruption, means the task was sent but its outcome is
    unknown: read the thread (see below) instead of resending, which could
-   repeat a write. An error that prints no result, such as an unknown agent
-   or no workspace, happens before sending; fix the cause and try again.
+   repeat a write. Only an exit `1` error that prints no result, such as an
+   unknown agent or no workspace, happened before sending; fix the cause and
+   try again.
 4. Attach local files only when the user asked for that exact disclosure:
    `--context "<glob>"`, repeatable, quoted so the CLI expands it relative to
    the current directory. Uploads are limited to 50 files and 512 KiB in
