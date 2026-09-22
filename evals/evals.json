@@ -5,7 +5,7 @@
     {
       "id": 1,
       "prompt": "Ask my Nebula inbox agent to summarize unread email from today.",
-      "expected_output": "Runs doctor, lists agents, picks the matching agent by name or description, delegates with chat --agent, and reports final_message, the agent name, and the thread_id. Does not ask for approval, because the task is read-only."
+      "expected_output": "Checks nebula-ai --version and nebula-ai --json status, lists agents, picks the matching agent by name or description, delegates with chat --agent, and reports final_message, the agent name, and the thread_id. Does not ask for approval, because the task is read-only."
     },
     {
       "id": 2,
