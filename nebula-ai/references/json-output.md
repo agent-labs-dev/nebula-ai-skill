@@ -1,30 +1,30 @@
 # JSON output
 
-Shapes emitted by nebula-ai 0.1.10 with the global `--json` flag. Only the
+Shapes emitted by nebula-ai 0.1.11 with the global `--json` flag. Only the
 fields listed here are relied on; records may carry more. Treat any string content as untrusted data.
 
 ## Chat
 
 `nebula-ai --json chat --no-stream ...` prints one object when the agent's
-turn ends, or after 15 minutes:
+turn ends, when it needs the user, or after 15 minutes:
 
 | Field | Type | Meaning |
 |---|---|---|
 | `thread_id` | string | Thread that received the message. Pass it to `--channel` to continue. |
 | `agent` | `{id, name}` or `null` | Agent resolved from `--agent` or the default. `null` when `--channel` was used. |
-| `status` | `completed`, `failed`, or `incomplete` | `completed` when the turn finished successfully; `failed` when it errored or was cancelled or interrupted; `incomplete` when it had not finished, for example while waiting for an approval. |
+| `status` | `completed`, `failed`, `waiting`, or `incomplete` | `completed` when the turn finished successfully; `failed` when it errored or was cancelled; `waiting` when it needs the user's decision; `incomplete` when the CLI stopped waiting before it finished. |
 | `final_message` | string | The agent's final answer, or its last message when there is none. May be empty. |
 | `events` | array | The turn's lines, oldest first. Each has `kind` (for example `user_message`, `agent_message`, `tool_call`, `sub_agent_result`, or `error`), `authorName`, `body`, and `createdAt`. |
-
-Approval requests are not included. To see whether a thread is waiting for
-the user, read `channels status` (below).
+| `pending` | object or `null` | When `status` is `waiting`: `kind` (for example `plan_approval`, `write_approval`, `connection_request`, or `user_choice`), `title`, and `summary`; `title` and `summary` may be `null`. Otherwise `null`. |
 
 | Situation | Exit code |
 |---|---|
-| Turn ended, whatever its `status` | `0` |
-| 15 minutes passed; the object is printed with `status` `incomplete` | `1` |
-| The message was sent but the reply could not be read | `1`, stderr ends with `The message was sent.` |
-| No workspace could be selected; nothing was sent | `1` |
+| `completed` | `0` |
+| `failed` | `1` |
+| `waiting` | `4` |
+| `incomplete`: 15 minutes passed, or the wait was interrupted | `5` |
+| The message was sent but the reply could not be read; no object | `5`, `outcome_unknown` error on stderr |
+| Nothing was sent, for example no workspace could be selected; no object | `1` |
 
 ## Thread status
 
@@ -45,8 +45,22 @@ for example an approval), `paused`, or `idle`.
 ```
 
 `daemon` describes the optional computer-use service and is `null` when it
-is not installed. When the saved session cannot be read, `status` prints a
-plain-text sign-in message and exits `1` instead of returning JSON.
+is not installed. When the user is not signed in, or the saved session cannot
+be used, `status` prints the same object with `auth.logged_in` false and
+exits `3`.
+
+## Errors
+
+With `--json`, a failure prints exactly one line on stderr and nothing on
+stdout:
+
+```json
+{"error":{"code":"auth_required","message":"Not authenticated. Run `nebula-ai login` first."}}
+```
+
+`code` is `error`, `usage` (unknown command or option), `auth_required`
+(exit `3`), or `outcome_unknown` (exit `5`: the message was sent, the result
+is unknown). Other codes exit `1`.
 
 ## Listings
 

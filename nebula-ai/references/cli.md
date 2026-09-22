@@ -1,12 +1,12 @@
 # nebula-ai CLI reference
 
-Commands relevant to delegation in nebula-ai 0.1.10. For anything else, read
+Commands relevant to delegation in nebula-ai 0.1.11. For anything else, read
 the command's `--help` output before running it.
 
 ## Install and sign in
 
 ```sh
-npm install --global nebula-ai@0.1.10
+npm install --global nebula-ai@0.1.11
 nebula-ai --version
 nebula-ai login
 nebula-ai status
@@ -122,12 +122,16 @@ Reports workspace token usage and cost for 1 to 365 days (default 7).
 | Situation | Behavior | Response |
 |---|---|---|
 | CLI missing | The shell reports `command not found` (exit `127`) | Ask, then install the verified version. |
-| Not signed in | `status` prints `auth.logged_in` false; other commands exit `1` with a sign-in message on stderr | Run `nebula-ai login` and wait for the user. |
-| Unknown command or option | Exit `1`, `error: unknown ...` on stderr | Check `--help`; the installed CLI may differ from 0.1.10. |
-| Agent not found | Exit `1` | Re-list agents; do not substitute another. |
-| Run failed or incomplete | Exit `0`, `status` is `failed` or `incomplete` | See the result handling in SKILL.md. |
-| Chat waited 15 minutes | Exit `1`, JSON printed with `status` `incomplete` | Check `channels status`; do not resend. |
-| Chat reply unreadable | Exit `1`, stderr ends with `The message was sent.` | Read the thread with `channels messages`; do not resend. |
+| Not signed in | Exit `3`; `status` prints `auth.logged_in` false, other commands print an `auth_required` error | Run `nebula-ai login` and wait for the user. |
+| Unknown command or option | Exit `1`, `usage` error | Check `--help`; the installed CLI may differ from 0.1.11. |
+| Agent not found | Exit `1`, nothing sent | Re-list agents; do not substitute another. |
+| Run failed | Exit `1`, JSON printed with `status` `failed` | Report it once. |
+| Run waiting for the user | Exit `4`, JSON printed with `status` `waiting` and `pending` | See the result handling in SKILL.md. |
+| Chat waited 15 minutes or was interrupted | Exit `5`, JSON printed with `status` `incomplete` | Check `channels status`; do not resend. |
+| Chat reply unreadable | Exit `5`, `outcome_unknown` error | Read the thread with `channels messages`; do not resend. |
 | Network or service error | Exit `1` | Report it once; do not loop. |
 
-Errors are written to stderr as text, not JSON.
+With `--json`, each failure prints exactly one line on stderr,
+`{"error":{"code":"...","message":"..."}}`. `code` is `error`, `usage`,
+`auth_required`, or `outcome_unknown`. Without `--json`, errors are plain
+text.

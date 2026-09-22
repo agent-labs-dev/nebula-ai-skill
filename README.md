@@ -12,6 +12,7 @@ credentials.
 
 | Skill | nebula-ai CLI |
 |---|---|
+| 0.5.0 | 0.1.11 |
 | 0.4.0 | 0.1.10 |
 | 0.3.0 | 0.1.10 |
 | 0.2.0 | 0.1.9 |
@@ -42,7 +43,7 @@ metadata for clients that read it.
 The skill offers to install the CLI after asking. To install it yourself:
 
 ```sh
-npm install --global nebula-ai@0.1.10
+npm install --global nebula-ai@0.1.11
 nebula-ai login
 ```
 
