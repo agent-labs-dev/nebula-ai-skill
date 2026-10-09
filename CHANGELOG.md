@@ -4,6 +4,17 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the skill uses
 [Semantic Versioning](https://semver.org).
 
+## [0.6.0] - 2026-10-09
+
+Verified against nebula-ai CLI 0.1.20.
+
+### Changed
+
+- Use `tasks` and `chat --task` for agent conversations and follow-ups.
+- Check the requesting user's connected accounts and their status, rather than
+  agent account bindings. Remove instructions for `agents set-account`.
+- Include command groups with aliases in the CLI help snapshot and validation.
+
 ## [0.5.0] - 2026-09-22
 
 Verified against nebula-ai CLI 0.1.11.

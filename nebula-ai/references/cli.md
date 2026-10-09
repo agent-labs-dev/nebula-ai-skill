@@ -1,12 +1,12 @@
 # nebula-ai CLI reference
 
-Commands relevant to delegation in nebula-ai 0.1.11. For anything else, read
+Commands relevant to delegation in nebula-ai 0.1.20. For anything else, read
 the command's `--help` output before running it.
 
 ## Install and sign in
 
 ```sh
-npm install --global nebula-ai@0.1.11
+npm install --global nebula-ai@0.1.20
 nebula-ai --version
 nebula-ai login
 nebula-ai status
@@ -55,22 +55,22 @@ nebula-ai --json agents skills list <agent-id>
 accepts an ID, a slug, or a case-insensitive name. Without `--agent`, chat uses
 the first enabled, non-system agent.
 
-`nebula-ai agents set-account <agent-id> --account <account-id>` chooses which
-connected account an agent acts as. Only the agent's owner can do this, and it
-changes what the agent can reach. Get explicit approval first.
+`agents accounts` lists your connected accounts accessible through the agent.
+Agents use the connections of the person requesting work. If a connection is
+missing, ask the user to connect it. `agents set-account` is no longer supported.
 
 ## Chat
 
 ```sh
 nebula-ai --json --no-color chat --no-stream --agent "<agent>" -- "<task>"
-nebula-ai --json --no-color chat --no-stream --channel "<thread-id>" -- "<follow-up>"
+nebula-ai --json --no-color chat --no-stream --task "<thread-id>" -- "<follow-up>"
 nebula-ai --json --no-color chat --no-stream --agent "<agent>" --context "docs/*.md" -- "<task>"
 ```
 
 | Option | Effect |
 |---|---|
 | `-a, --agent <agent>` | Send to this agent's direct-message thread. |
-| `-c, --channel <thread-id>` | Send to an existing thread. Takes precedence over `--agent`. |
+| `-t, --task <thread-id>` | Send to an existing thread. Takes precedence over `--agent`. |
 | `--context <glob>` | Upload matching files with the message. Repeatable. Quote the glob. At most 50 files and 512 KiB in total; a glob that matches nothing is an error. |
 | `--no-stream` | Wait and print one result. Always use it for automation. |
 | `-r, --resume <thread-id>` | Open the interactive terminal UI on a thread. For the user, not for automation; it cannot be combined with a message. |
@@ -80,19 +80,19 @@ option.
 
 ## Threads
 
-The CLI calls threads "channels": `channels` commands and the `--channel`
-option take thread IDs.
+The CLI calls agent conversations Tasks. `tasks` commands and `--task` take
+the `thread_id` returned by `chat`. Channels organize Tasks, calls and Miniapps.
 
 ```sh
-nebula-ai --json channels list --limit 20
-nebula-ai --json channels list --archived
-nebula-ai --json channels get <thread-id>
-nebula-ai --json channels status <thread-id>
-nebula-ai --json channels messages --limit 50 <thread-id>
-nebula-ai --json channels create --agent <agent-id> --title "<title>"
+nebula-ai --json tasks list --limit 20
+nebula-ai --json tasks list --archived
+nebula-ai --json tasks get <thread-id>
+nebula-ai --json tasks status <thread-id>
+nebula-ai --json tasks messages --limit 50 <thread-id>
+nebula-ai --json tasks create --agent <agent-id> --title "<title>"
 ```
 
-`channels status` reports the thread's current work status. `channels create`
+`tasks status` reports the thread's current work status. `tasks create`
 starts a separate thread addressed to an agent; use it when unrelated work
 should not share the agent's direct-message history.
 
@@ -123,12 +123,12 @@ Reports workspace token usage and cost for 1 to 365 days (default 7).
 |---|---|---|
 | CLI missing | The shell reports `command not found` (exit `127`) | Ask, then install the verified version. |
 | Not signed in | Exit `3`; `status` prints `auth.logged_in` false, other commands print an `auth_required` error | Run `nebula-ai login` and wait for the user. |
-| Unknown command or option | Exit `1`, `usage` error | Check `--help`; the installed CLI may differ from 0.1.11. |
+| Unknown command or option | Exit `1`, `usage` error | Check `--help`; the installed CLI may differ from 0.1.20. |
 | Agent not found | Exit `1`, nothing sent | Re-list agents; do not substitute another. |
 | Run failed | Exit `1`, JSON printed with `status` `failed` | Report it once. |
 | Run waiting for the user | Exit `4`, JSON printed with `status` `waiting` and `pending` | See the result handling in SKILL.md. |
-| Chat waited 15 minutes or was interrupted | Exit `5`, JSON printed with `status` `incomplete` | Check `channels status`; do not resend. |
-| Chat reply unreadable | Exit `5`, `outcome_unknown` error | Read the thread with `channels messages`; do not resend. |
+| Chat waited 15 minutes or was interrupted | Exit `5`, JSON printed with `status` `incomplete` | Check `tasks status`; do not resend. |
+| Chat reply unreadable | Exit `5`, `outcome_unknown` error | Read the thread with `tasks messages`; do not resend. |
 | Network or service error | Exit `1` | Report it once; do not loop. |
 
 With `--json`, each failure prints exactly one line on stderr,
