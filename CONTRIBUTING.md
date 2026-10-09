@@ -1,7 +1,6 @@
 # Contributing
 
-Thanks for helping improve the Nebula AI skill. Issues and pull requests are
-welcome.
+Issues and pull requests are welcome.
 
 ## Layout
 
@@ -22,12 +21,14 @@ Requires a POSIX shell, Python 3.11+, Node.js 18+, and optionally
 ```sh
 python3 tools/check_skill.py
 tools/snapshot-cli.sh --check
-shellcheck tools/*.sh
+git ls-files -z '*.sh' | xargs -0 -r shellcheck
+uvx --from skills-ref==0.1.1 agentskills validate ./nebula-ai
 ```
 
 `check_skill.py` verifies that every `nebula-ai` command in the docs exists,
 with valid options, in the snapshot. It also
-checks that version numbers agree across the repository.
+checks that version numbers agree across the repository. The Agent Skills
+validator uses uv to check the skill format.
 
 ## Updating the supported CLI version
 
