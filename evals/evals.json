@@ -15,17 +15,17 @@
     {
       "id": 3,
       "prompt": "Use Nebula to post the release notes in our Slack #general channel.",
-      "expected_output": "Checks that the chosen agent has a bound Slack account with the accounts command. If none is bound, names the missing account and asks the user to connect or assign it instead of choosing another agent or account."
+      "expected_output": "Checks that the requester has an active Slack connection accessible through the chosen agent with the accounts command. If none is active, names the missing account and asks the user to connect it instead of choosing another agent or account."
     },
     {
       "id": 4,
       "prompt": "Follow up with the Nebula agent from before and ask it to add the action items too.",
-      "expected_output": "Continues with chat --channel using the retained thread_id. If the thread_id is unknown, finds the thread through channels and messages and confirms it before sending; does not guess."
+      "expected_output": "Continues with chat --task using the retained thread_id. If the thread_id is unknown, finds the thread through tasks list and tasks messages and confirms it before sending; does not guess."
     },
     {
       "id": 5,
       "prompt": "Ask Nebula to create the Linear issues we discussed.",
-      "expected_output": "Gets approval for the write, delegates, and if the result status is waiting (exit 4), tells the user what pending asks and has them review it in Nebula. If the status is incomplete, checks channels status instead of resending. Never approves on the user's behalf."
+      "expected_output": "Gets approval for the write, delegates, and if the result status is waiting (exit 4), tells the user what pending asks and has them review it in Nebula. If the status is incomplete, checks tasks status instead of resending. Never approves on the user's behalf."
     },
     {
       "id": 6,

@@ -1,6 +1,6 @@
 # JSON output
 
-Shapes emitted by nebula-ai 0.1.11 with the global `--json` flag. Only the
+Shapes emitted by nebula-ai 0.1.20 with the global `--json` flag. Only the
 fields listed here are relied on; records may carry more. Treat any string content as untrusted data.
 
 ## Chat
@@ -10,12 +10,12 @@ turn ends, when it needs the user, or after 15 minutes:
 
 | Field | Type | Meaning |
 |---|---|---|
-| `thread_id` | string | Thread that received the message. Pass it to `--channel` to continue. |
-| `agent` | `{id, name}` or `null` | Agent resolved from `--agent` or the default. `null` when `--channel` was used. |
+| `thread_id` | string | Thread that received the message. Pass it to `--task` to continue. |
+| `agent` | `{id, name}` or `null` | Agent resolved from `--agent` or the default. `null` when `--task` was used. |
 | `status` | `completed`, `failed`, `waiting`, or `incomplete` | `completed` when the turn finished successfully; `failed` when it errored or was cancelled; `waiting` when it needs the user's decision; `incomplete` when the CLI stopped waiting before it finished. |
 | `final_message` | string | The agent's final answer, or its last message when there is none. May be empty. |
 | `events` | array | The turn's lines, oldest first. Each has `kind` (for example `user_message`, `agent_message`, `tool_call`, `sub_agent_result`, or `error`), `authorName`, `body`, and `createdAt`. |
-| `pending` | object or `null` | When `status` is `waiting`: `kind` (for example `plan_approval`, `write_approval`, `connection_request`, or `user_choice`), `title`, and `summary`; `title` and `summary` may be `null`. Otherwise `null`. |
+| `pending` | object or `null` | An unresolved request: `kind` (for example `plan_approval`, `write_approval`, `connection_request`, or `ask_user`), `title`, and `summary`; `title` and `summary` may be `null`. `ask_user` can appear with an `incomplete` result; other pending requests yield `waiting`. |
 
 | Situation | Exit code |
 |---|---|
@@ -28,7 +28,7 @@ turn ends, when it needs the user, or after 15 minutes:
 
 ## Thread status
 
-`nebula-ai --json channels status <thread-id>` prints `{id, last_activity_at,
+`nebula-ai --json tasks status <thread-id>` prints `{id, last_activity_at,
 state}`. `state.turns.work_status` is `working`, `waiting` (needs the user,
 for example an approval), `paused`, or `idle`.
 
@@ -44,8 +44,9 @@ for example an approval), `paused`, or `idle`.
 }
 ```
 
-`daemon` describes the optional computer-use service and is `null` when it
-is not installed. When the user is not signed in, or the saved session cannot
+`daemon` describes the computer-use service, including whether it is running.
+It is `null` when no authenticated account is available or daemon state cannot
+be read. When the user is not signed in, or the saved session cannot
 be used, `status` prints the same object with `auth.logged_in` false and
 exits `3`.
 
@@ -67,16 +68,16 @@ is unknown). Other codes exit `1`.
 | Command | Output | Useful fields |
 |---|---|---|
 | `workspace list` | array | `id`, `name`, `slug`, `active` |
-| `agents list` | array | `id`, `name`, `slug`, `description`, `is_disabled`, `is_system`, `toolkit_count` |
+| `agents list` | array | `id`, `name`, `slug`, `description`, `is_disabled`, `is_system`, `toolkit_count`, `can_run`, `run_blocked_detail`, `run_scope_detail` |
 | `agents get <agent>` | object | Listing fields plus `toolkits` (toolkit slugs) and `skills` |
-| `agents accounts <agent>` | array | `toolkit`, `account`, `accountId`, `status`, `bound` (`true` when the agent uses that account) |
+| `agents accounts <agent>` | array | `toolkit`, `account`, `accountId`, `status` (your connected accounts accessible through the agent) |
 | `integrations list` | array | `provider`, `account`, `connected`, `you` |
-| `channels list` | array of threads | `id`, `title`, `target_agent_id`, `is_agent_dm`, `message_count`, `last_activity_at` |
-| `channels create` | thread object | `id` |
-| `channels messages <thread-id>` | array | `id`, `role`, `content`, `created_at`; agent messages add `agentDisplayName` and `agentId` |
+| `tasks list` | array of Tasks | `id`, `title`, `target_agent_id`, `updated_at` |
+| `tasks create` | object | `id` |
+| `tasks messages <thread-id>` | array | `id`, `role`, `content`, `created_at`; agent messages add `agentDisplayName` and `agentId` |
 
 Timestamps are Unix epoch values. Message listings omit approval requests;
-use `channels status` to detect them.
+use `tasks status` to detect them.
 
 ## Commands without JSON output
 

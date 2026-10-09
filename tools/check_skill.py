@@ -58,7 +58,7 @@ def snapshot_tree(text: str) -> dict[tuple[str, ...], Command]:
                 for option in re.findall(r"--[\w-]+|-[A-Za-z0-9]", signature):
                     current.options[option] = Option(arity, "..." in signature)
             elif section == "Commands:":
-                match = re.match(r"^  ([\w-]+)(?:\s|$)", line)
+                match = re.match(r"^  ([\w-]+)(?:[|\s]|$)", line)
                 if match and match[1] != "help":
                     current.children.add(match[1])
     if () not in tree:

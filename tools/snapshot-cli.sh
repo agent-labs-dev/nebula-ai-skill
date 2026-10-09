@@ -82,7 +82,7 @@ def walk(path, output):
         elif line and not line[0].isspace():
             in_commands = False
         elif in_commands:
-            match = re.match(r"^  ([a-zA-Z0-9][a-zA-Z0-9-]*)(?:\s|$)", line)
+            match = re.match(r"^  ([a-zA-Z0-9][a-zA-Z0-9-]*)(?:[|\s]|$)", line)
             if match and match[1] != "help":
                 walk((*path, match[1]), output)
 

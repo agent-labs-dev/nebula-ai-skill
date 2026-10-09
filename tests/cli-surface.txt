@@ -1,4 +1,4 @@
-# nebula-ai 0.1.11
+# nebula-ai 0.1.20
 
 ===== nebula-ai
 Usage: nebula-ai [options] [command]
@@ -23,7 +23,10 @@ Commands:
   usage [options]           Show workspace token usage and cost
   chat [options] [message]  Send a message to an agent DM and print the reply
   call                      Voice calls
-  channels                  Manage channels (threads)
+  open <link>               Resolve a nebula://open link (--json prints the
+                            entity)
+  channels|spaces           View and work inside Channels
+  tasks                     Manage Tasks
   agents                    Manage agents
   user                      View or update user profile and account settings
   profile                   View or update your user profile
@@ -79,18 +82,18 @@ Usage: nebula-ai chat [options] [message]
 Send a message to an agent DM and print the reply
 
 Arguments:
-  message                    Message to send (omit when using --resume)
+  message                 Message to send (omit when using --resume)
 
 Options:
-  -a, --agent <name>         Agent name, slug, or ID (defaults to first active
-                             agent)
-  -c, --channel <id>         Send to a specific channel ID instead of agent DM
-  --context <glob>           Attach files matching a glob pattern (repeatable,
-                             e.g. --context 'src/**/*.ts') (default: [])
-  -r, --resume <channel-id>  Boot the TUI directly into an existing channel (no
-                             message needed)
-  --no-stream                Wait quietly, without the running tool commentary
-  -h, --help                 display help for command
+  -a, --agent <name>      Agent name, slug, or ID (defaults to first active
+                          agent)
+  -t, --task <id>         Send to a specific Task instead of an agent DM
+  --context <glob>        Attach files matching a glob pattern (repeatable, e.g.
+                          --context 'src/**/*.ts') (default: [])
+  -r, --resume <task-id>  Boot the TUI directly into an existing Task (no
+                          message needed)
+  --no-stream             Wait quietly, without the running tool commentary
+  -h, --help              display help for command
 
 ===== nebula-ai call
 Usage: nebula-ai call [options] [command]
@@ -98,17 +101,17 @@ Usage: nebula-ai call [options] [command]
 Voice calls
 
 Options:
-  -h, --help               display help for command
+  -h, --help             display help for command
 
 Commands:
-  start [options]          Start a call (opens the TUI; --json for scripts)
-  list <thread>            List a thread's calls (live first, then recent)
-  status <thread>          Show a thread's live-call status and roster
-  chat [options] <thread>  Send a typed message into a live call
-  leave <thread>           Leave the live call on a thread
-  end <thread>             End the live call on a thread for everyone
-  join [options] <thread>  Join a call (TUI; --headless for engine-only; --json)
-  help [command]           display help for command
+  start [options]        Start a call (opens the TUI; --json for scripts)
+  list <task>            List a Task's Calls (live first, then recent)
+  status <task>          Show a Task's live-Call status and roster
+  chat [options] <task>  Send a typed message into a live call
+  leave <task>           Leave the live Call on a Task
+  end <task>             End the live Call on a Task for everyone
+  join [options] <task>  Join a call (TUI; --headless for engine-only; --json)
+  help [command]         display help for command
 
 ===== nebula-ai call start
 Usage: nebula-ai call start [options]
@@ -116,7 +119,7 @@ Usage: nebula-ai call start [options]
 Start a call (opens the TUI; --json for scripts)
 
 Options:
-  --thread <id>     Origin thread that seeds agent context
+  --task <id>       Origin Task that seeds agent context
   --title <title>   Initial call title
   --private         Private visibility (default: workspace)
   --channel <slug>  Channel to place the call in; a DM's slug rings the other
@@ -124,68 +127,68 @@ Options:
   -h, --help        display help for command
 
 ===== nebula-ai call list
-Usage: nebula-ai call list [options] <thread>
+Usage: nebula-ai call list [options] <task>
 
-List a thread's calls (live first, then recent)
+List a Task's Calls (live first, then recent)
 
 Arguments:
-  thread      Thread ID
+  task        Task ID
 
 Options:
   -h, --help  display help for command
 
 ===== nebula-ai call status
-Usage: nebula-ai call status [options] <thread>
+Usage: nebula-ai call status [options] <task>
 
-Show a thread's live-call status and roster
+Show a Task's live-Call status and roster
 
 Arguments:
-  thread      Thread ID
+  task        Task ID
 
 Options:
   -h, --help  display help for command
 
 ===== nebula-ai call chat
-Usage: nebula-ai call chat [options] <thread>
+Usage: nebula-ai call chat [options] <task>
 
 Send a typed message into a live call
 
 Arguments:
-  thread                Thread ID
+  task                  Task ID
 
 Options:
   -m, --message <text>  Message text (reads stdin when omitted)
   -h, --help            display help for command
 
 ===== nebula-ai call leave
-Usage: nebula-ai call leave [options] <thread>
+Usage: nebula-ai call leave [options] <task>
 
-Leave the live call on a thread
+Leave the live Call on a Task
 
 Arguments:
-  thread      Thread ID
+  task        Task ID
 
 Options:
   -h, --help  display help for command
 
 ===== nebula-ai call end
-Usage: nebula-ai call end [options] <thread>
+Usage: nebula-ai call end [options] <task>
 
-End the live call on a thread for everyone
+End the live Call on a Task for everyone
 
 Arguments:
-  thread      Thread ID
+  task        Task ID
 
 Options:
   -h, --help  display help for command
 
 ===== nebula-ai call join
-Usage: nebula-ai call join [options] <thread>
+Usage: nebula-ai call join [options] <task>
 
 Join a call (TUI; --headless for engine-only; --json)
 
 Arguments:
-  thread      Thread ID
+  task        Task ID
 
 Options:
   --headless  Run the audio engine without a TUI
@@ -193,132 +196,510 @@ Options:
   --muted     Never publish the mic with --headless
   -h, --help  display help for command
 
-===== nebula-ai channels
-Usage: nebula-ai channels [options] [command]
+===== nebula-ai open
+Usage: nebula-ai open [options] <link>
 
-Manage channels (threads)
-
-Options:
-  -h, --help               display help for command
-
-Commands:
-  list [options]           List channels
-  create [options]         Create a new channel
-  get <id>                 Get channel details
-  status <id>              Show canonical Thread work status
-  delete <id>              Delete a channel
-  archive <id>             Archive a channel
-  unarchive <id>           Unarchive a channel
-  share <id>               Share a channel
-  messages [options] <id>  List messages in a channel
-  update [options] <id>    Update a channel
-  help [command]           display help for command
-
-===== nebula-ai channels list
-Usage: nebula-ai channels list [options]
-
-List channels
-
-Options:
-  --limit <n>  Max results (default: "20")
-  --archived   Show archived channels
-  -h, --help   display help for command
-
-===== nebula-ai channels create
-Usage: nebula-ai channels create [options]
-
-Create a new channel
-
-Options:
-  -t, --title <title>  Channel title
-  -a, --agent <id>     Agent ID
-  -h, --help           display help for command
-
-===== nebula-ai channels get
-Usage: nebula-ai channels get [options] <id>
-
-Get channel details
-
-Arguments:
-  id          Channel ID
+Resolve a nebula://open link (--json prints the entity)
 
 Options:
   -h, --help  display help for command
 
-===== nebula-ai channels status
-Usage: nebula-ai channels status [options] <id>
+===== nebula-ai channels
+Usage: nebula-ai channels|spaces [options] [command]
 
-Show canonical Thread work status
+View and work inside Channels
+
+Options:
+  -h, --help                           display help for command
+
+Commands:
+  list                                 List Channels in backend order
+  create [options] <name>              Create a Channel
+  join <space>                         Join an open Channel you are not in yet
+  rename <space> <new-name>            Rename a Channel
+  delete <space>                       Delete a Channel
+  message [options] <space>            Send a message in a Channel
+  tasks <space>                        List a Channel's Tasks and scheduled
+                                       Tasks
+  files <space>                        List files produced by a Channel's Tasks
+  calls <space>                        List Calls in a Channel
+  call [options] <space>               Start a Call in a Channel
+  miniapps <space>                     List Miniapps available from a Channel
+  add-miniapp <space> <miniapp>        Put one of the workspace's Miniapps on a
+                                       Channel
+  remove-miniapp <space> <miniapp>     Take a Miniapp off a Channel (the app
+                                       itself stays)
+  model <space> <model>                Set the model for new Tasks in a Channel,
+                                       or Home's own
+  appearance [options] <space>         Set a Channel icon and color
+  agents <space>                       List a Channel's agents
+  add-agent <space> <agent>            Add an agent to a Channel
+  remove-agent <space> <agent>         Remove an agent from a Channel
+  default-model <space> <model>        Set the default model for new Tasks in a
+                                       Channel
+  devices <space>                      List devices linked to a Channel
+  add-device [options] <space>         Add a cloud device or this computer to a
+                                       Channel
+  remove-device <space> <device>       Remove a device from a Channel
+  default-device <space> [device]      Make a linked device the default for new
+                                       Tasks in a Channel
+  members <space>                      List members of a private Channel
+  invite <space> <member>              Invite a workspace member to a private
+                                       Channel
+  remove-member <space> <member>       Remove a member from a private Channel
+  member-role <space> <member> <role>  Change a private Channel member's role
+  help [command]                       display help for command
+
+===== nebula-ai channels list
+Usage: nebula-ai channels list [options]
+
+List Channels in backend order
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels create
+Usage: nebula-ai channels create [options] <name>
+
+Create a Channel
 
 Arguments:
-  id          Channel ID
+  name                  Channel name
+
+Options:
+  --kind <kind>         shared or private (default: "shared")
+  --description <text>  Channel description
+  -h, --help            display help for command
+
+===== nebula-ai channels join
+Usage: nebula-ai channels join [options] <space>
+
+Join an open Channel you are not in yet
+
+Arguments:
+  space       Channel handle or name
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels rename
+Usage: nebula-ai channels rename [options] <space> <new-name>
+
+Rename a Channel
+
+Arguments:
+  space       Current Channel name
+  new-name    New Channel name
 
 Options:
   -h, --help  display help for command
 
 ===== nebula-ai channels delete
-Usage: nebula-ai channels delete [options] <id>
+Usage: nebula-ai channels delete [options] <space>
 
-Delete a channel
+Delete a Channel
 
 Arguments:
-  id          Channel ID
+  space       Channel handle (or home)
 
 Options:
   -h, --help  display help for command
 
-===== nebula-ai channels archive
-Usage: nebula-ai channels archive [options] <id>
+===== nebula-ai channels message
+Usage: nebula-ai channels message [options] <space>
 
-Archive a channel
+Send a message in a Channel
 
 Arguments:
-  id          Channel ID
+  space                 Channel handle (or home)
+
+Options:
+  -m, --message <text>  Message text (reads stdin when omitted)
+  -h, --help            display help for command
+
+===== nebula-ai channels tasks
+Usage: nebula-ai channels tasks [options] <space>
+
+List a Channel's Tasks and scheduled Tasks
+
+Arguments:
+  space       Channel handle (or home)
 
 Options:
   -h, --help  display help for command
 
-===== nebula-ai channels unarchive
-Usage: nebula-ai channels unarchive [options] <id>
+===== nebula-ai channels files
+Usage: nebula-ai channels files [options] <space>
 
-Unarchive a channel
+List files produced by a Channel's Tasks
 
 Arguments:
-  id          Channel ID
+  space       Channel handle (or home)
 
 Options:
   -h, --help  display help for command
 
-===== nebula-ai channels share
-Usage: nebula-ai channels share [options] <id>
+===== nebula-ai channels calls
+Usage: nebula-ai channels calls [options] <space>
 
-Share a channel
+List Calls in a Channel
 
 Arguments:
-  id          Channel ID
+  space       Channel handle (or home)
 
 Options:
   -h, --help  display help for command
 
-===== nebula-ai channels messages
-Usage: nebula-ai channels messages [options] <id>
+===== nebula-ai channels call
+Usage: nebula-ai channels call [options] <space>
 
-List messages in a channel
+Start a Call in a Channel
 
 Arguments:
-  id           Channel ID
+  space            Channel handle (or home)
+
+Options:
+  --title <title>  Initial Call title
+  -h, --help       display help for command
+
+===== nebula-ai channels miniapps
+Usage: nebula-ai channels miniapps [options] <space>
+
+List Miniapps available from a Channel
+
+Arguments:
+  space       Channel handle (or home)
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels add-miniapp
+Usage: nebula-ai channels add-miniapp [options] <space> <miniapp>
+
+Put one of the workspace's Miniapps on a Channel
+
+Arguments:
+  space       Channel handle (or home)
+  miniapp     Miniapp ID or name
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels remove-miniapp
+Usage: nebula-ai channels remove-miniapp [options] <space> <miniapp>
+
+Take a Miniapp off a Channel (the app itself stays)
+
+Arguments:
+  space       Channel handle (or home)
+  miniapp     Miniapp ID or name
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels model
+Usage: nebula-ai channels model [options] <space> <model>
+
+Set the model for new Tasks in a Channel, or Home's own
+
+Arguments:
+  space       Channel handle (or home)
+  model       Model ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels appearance
+Usage: nebula-ai channels appearance [options] <space>
+
+Set a Channel icon and color
+
+Arguments:
+  space            Channel handle (or home)
+
+Options:
+  --icon <icon>    Channel icon (message-square, circle, square, triangle,
+                   diamond, hexagon, rocket, lightbulb, code-2, palette,
+                   megaphone, briefcase-business, target, users-round,
+                   calendar-days, wrench, activity, archive, atom, badge-check,
+                   bell, book-open, bot, box, bug, building-2, camera,
+                   chart-column, cloud, coffee, compass, database, file-text,
+                   flag, folder, gamepad-2)
+  --color <color>  Channel color (slate, red, orange, amber, emerald, teal,
+                   cyan, blue, violet, pink)
+  -h, --help       display help for command
+
+===== nebula-ai channels agents
+Usage: nebula-ai channels agents [options] <space>
+
+List a Channel's agents
+
+Arguments:
+  space       Channel handle (or home)
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels add-agent
+Usage: nebula-ai channels add-agent [options] <space> <agent>
+
+Add an agent to a Channel
+
+Arguments:
+  space       Channel handle (or home)
+  agent       Agent ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels remove-agent
+Usage: nebula-ai channels remove-agent [options] <space> <agent>
+
+Remove an agent from a Channel
+
+Arguments:
+  space       Channel handle (or home)
+  agent       Agent ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels default-model
+Usage: nebula-ai channels default-model [options] <space> <model>
+
+Set the default model for new Tasks in a Channel
+
+Arguments:
+  space       Channel handle (or home)
+  model       Model ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels devices
+Usage: nebula-ai channels devices [options] <space>
+
+List devices linked to a Channel
+
+Arguments:
+  space       Channel handle (or home)
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels add-device
+Usage: nebula-ai channels add-device [options] <space>
+
+Add a cloud device or this computer to a Channel
+
+Arguments:
+  space          Channel handle (or home)
+
+Options:
+  --local        Add this computer instead of a cloud device
+  --size <size>  Cloud device size (default: "small")
+  -h, --help     display help for command
+
+===== nebula-ai channels remove-device
+Usage: nebula-ai channels remove-device [options] <space> <device>
+
+Remove a device from a Channel
+
+Arguments:
+  space       Channel handle (or home)
+  device      Device ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels default-device
+Usage: nebula-ai channels default-device [options] <space> [device]
+
+Make a linked device the default for new Tasks in a Channel
+
+Arguments:
+  space       Channel handle (or home)
+  device      Device ID (omit to clear the default)
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels members
+Usage: nebula-ai channels members [options] <space>
+
+List members of a private Channel
+
+Arguments:
+  space       Channel handle (or home)
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels invite
+Usage: nebula-ai channels invite [options] <space> <member>
+
+Invite a workspace member to a private Channel
+
+Arguments:
+  space       Channel handle (or home)
+  member      Member ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels remove-member
+Usage: nebula-ai channels remove-member [options] <space> <member>
+
+Remove a member from a private Channel
+
+Arguments:
+  space       Channel handle (or home)
+  member      Member ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels member-role
+Usage: nebula-ai channels member-role [options] <space> <member> <role>
+
+Change a private Channel member's role
+
+Arguments:
+  space       Channel handle (or home)
+  member      Member ID
+  role        admin or member
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai tasks
+Usage: nebula-ai tasks [options] [command]
+
+Manage Tasks
+
+Options:
+  -h, --help               display help for command
+
+Commands:
+  list [options]           List Tasks
+  create [options]         Start a new Task
+  get <id>                 Get Task details
+  status <id>              Show Task work status
+  delete <id>              Delete a Task
+  archive <id>             Archive a Task
+  unarchive <id>           Unarchive a Task
+  share <id>               Share a Task
+  messages [options] <id>  List messages in a Task
+  update [options] <id>    Update a Task
+  help [command]           display help for command
+
+===== nebula-ai tasks list
+Usage: nebula-ai tasks list [options]
+
+List Tasks
+
+Options:
+  --limit <n>  Max results (default: "20")
+  --archived   Show archived Tasks
+  -h, --help   display help for command
+
+===== nebula-ai tasks create
+Usage: nebula-ai tasks create [options]
+
+Start a new Task
+
+Options:
+  -t, --title <title>  Task title
+  -a, --agent <id>     Agent ID
+  --channel <name>     Channel handle (defaults to Home)
+  -s, --space <name>   Alias for --channel
+  -h, --help           display help for command
+
+===== nebula-ai tasks get
+Usage: nebula-ai tasks get [options] <id>
+
+Get Task details
+
+Arguments:
+  id          Task ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai tasks status
+Usage: nebula-ai tasks status [options] <id>
+
+Show Task work status
+
+Arguments:
+  id          Task ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai tasks delete
+Usage: nebula-ai tasks delete [options] <id>
+
+Delete a Task
+
+Arguments:
+  id          Task ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai tasks archive
+Usage: nebula-ai tasks archive [options] <id>
+
+Archive a Task
+
+Arguments:
+  id          Task ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai tasks unarchive
+Usage: nebula-ai tasks unarchive [options] <id>
+
+Unarchive a Task
+
+Arguments:
+  id          Task ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai tasks share
+Usage: nebula-ai tasks share [options] <id>
+
+Share a Task
+
+Arguments:
+  id          Task ID
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai tasks messages
+Usage: nebula-ai tasks messages [options] <id>
+
+List messages in a Task
+
+Arguments:
+  id           Task ID
 
 Options:
   --limit <n>  Max results (default: "50")
   -h, --help   display help for command
 
-===== nebula-ai channels update
-Usage: nebula-ai channels update [options] <id>
+===== nebula-ai tasks update
+Usage: nebula-ai tasks update [options] <id>
 
-Update a channel
+Update a Task
 
 Arguments:
-  id                   Channel ID
+  id                   Task ID
 
 Options:
   -t, --title <title>  New title
@@ -342,9 +723,10 @@ Commands:
   errors [options] <id>       Get agent errors
   enable <id>                 Enable an agent
   disable <id>                Disable an agent
-  accounts <id>               Show which account an agent acts as, and what else
-                              it could use
-  set-account [options] <id>  Choose which connected account an agent acts as
+  accounts <id>               Show your connected accounts accessible through an
+                              agent
+  set-account [options] <id>  Deprecated: agents use the caller's connected
+                              accounts
   triggers <id>               List triggers for an agent
   skills                      Manage agent skills
   help [command]              display help for command
@@ -453,7 +835,7 @@ Options:
 ===== nebula-ai agents accounts
 Usage: nebula-ai agents accounts [options] <id>
 
-Show which account an agent acts as, and what else it could use
+Show your connected accounts accessible through an agent
 
 Arguments:
   id          Agent ID or slug
@@ -464,14 +846,13 @@ Options:
 ===== nebula-ai agents set-account
 Usage: nebula-ai agents set-account [options] <id>
 
-Choose which connected account an agent acts as
+Deprecated: agents use the caller's connected accounts
 
 Arguments:
   id                          Agent ID
 
 Options:
-  -a, --account <account_id>  Account id to bind (see `nebula-ai agents accounts
-                              <id>`)
+  -a, --account <account_id>  Connected account ID
   -h, --help                  display help for command
 
 ===== nebula-ai agents triggers
@@ -1190,13 +1571,14 @@ Options:
   -h, --help      display help for command
 
 Commands:
-  get             Show where `claude` resolves on this device, and its version
+  get             Show where this device's Claude Code command resolves, and its
+                  version
   help [command]  display help for command
 
 ===== nebula-ai local-device claude-code get
 Usage: nebula-ai local-device claude-code get [options]
 
-Show where `claude` resolves on this device, and its version
+Show where this device's Claude Code command resolves, and its version
 
 Options:
   -h, --help  display help for command
