@@ -13,7 +13,7 @@ turn ends, when it needs the user, or after 15 minutes:
 | `thread_id` | string | Task that received the message. Pass it to `--task` to continue. |
 | `agent` | `{id, name}` or `null` | Agent resolved from `--agent` or the default. `null` when `--task` was used. |
 | `status` | `completed`, `failed`, `waiting`, or `incomplete` | `completed` when the turn finished successfully; `failed` when it errored or was cancelled; `waiting` when it needs the user's decision; `incomplete` when the CLI stopped waiting before it finished. |
-| `final_message` | string | The agent's final answer, or its last message when there is none. May be empty. |
+| `final_message` | string | The agent's final answer, or its last message when there is none. May be empty, including on an `incomplete` result whose reply arrives later; read it with `messages list --task`. |
 | `events` | array | The turn's lines, oldest first. Each has `kind` (for example `user_message`, `agent_message`, `tool_call`, `sub_agent_result`, or `error`), `authorName`, `body`, and `createdAt`. |
 | `pending` | object or `null` | An unresolved request: `kind` (for example `plan_approval`, `write_approval`, `connection_request`, or `ask_user`), `title`, and `summary`; `title` and `summary` may be `null`. `ask_user` adds `questions` and can appear with an `incomplete` result; other pending requests yield `waiting`. |
 
@@ -29,16 +29,19 @@ turn ends, when it needs the user, or after 15 minutes:
 ## Task
 
 `nebula-ai --json tasks get <thread-id>` prints one Task object; `tasks list`
-prints an array of them, newest first.
+prints an array of them, 20 unless `--limit` asks for more. The list draws
+from every Task the caller can see in the workspace, including other
+members' Tasks, with active and unread Tasks first and the rest newest
+first.
 
 | Field | Meaning |
 |---|---|
 | `id` | The Task, the same value as `thread_id` from `chat`. |
 | `title`, `summary` | What the Task is about and where it got to. |
-| `agent` | The agent's display name, or `null`. |
+| `agent` | The agent's display name, or `null`, including on Tasks the agent is working on. |
 | `channel` | The Channel's name, or `null`. |
-| `work_status` | `working`, `waiting` (needs the user, for example an approval), `paused`, or `idle`. |
-| `phase` | One word for where the Task stands: `queued`, `running`, `paused`, `waiting`, `completed`, `failed`, or `canceled`. |
+| `phase` | Where the Task stands. Branch on this field. `queued`: accepted, no run started yet. `running`: the agent is working. `waiting`: needs the user, for example an approval or a question. `paused`: a durable wait that Nebula resumes on its own. `completed`, `failed`, or `canceled`: settled, by how the last run ended. A Task whose first run has not opened yet can read `completed`, so confirm with `messages list --task` that the agent replied. |
+| `work_status` | `working`, `waiting`, `paused`, or `idle`, counting live runs only. A question or approval can outlive the run that raised it, and then this reads `idle`, so detect a wait with `phase`. |
 | `waiting_on_user_id` | Who a `waiting` Task waits on; `null` otherwise. |
 | `unread_count`, `task_number`, `thread_root_id`, `created_at`, `updated_at` | Bookkeeping. |
 
@@ -72,9 +75,13 @@ stdout:
 {"error":{"code":"auth_required","message":"Not authenticated. Run `nebula-ai login` first."}}
 ```
 
-`code` is `error`, `usage` (unknown command or option), `auth_required`
+`code` is `error`, `usage` (unknown command or option),
+`personal_device_agent_consent` (an agent that runs on the user's computer
+needs their confirmation in the app to join a Channel), `auth_required`
 (exit `3`), or `outcome_unknown` (exit `5`: the message was sent, the result
-is unknown). Other codes exit `1`.
+is unknown). `error`, `usage` and `personal_device_agent_consent` exit `1`.
+A read that got no answer in 30 seconds is `error`, the same code as a
+refusal; read `message` to tell them apart.
 
 ## Listings
 

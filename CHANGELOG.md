@@ -4,6 +4,29 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the skill uses
 [Semantic Versioning](https://semver.org).
 
+## [0.8.0] - 2026-11-04
+
+Verified against nebula-ai CLI 0.1.26.
+
+### Changed
+
+- Start new work with `tasks create -a <agent-handle>` instead of
+  `chat --agent`, which piles every request into one direct-message thread.
+  Keep `chat --task` for follow-ups. `-a` takes a handle only.
+- Wait for a delegated Task by polling `tasks get` and reading
+  `messages list --task`, instead of holding `chat --no-stream` open for up
+  to 15 minutes. Run a blocking `chat` in the background when tool calls are
+  capped below 15 minutes.
+- Branch on a Task's `phase`, not `work_status`, which counts only live runs
+  and can read `idle` while a question or approval is still open.
+- Tell the user to run `npx skills update nebula-ai` when the installed CLI is
+  newer than the skill.
+- Project `agents list` with `jq` so large workspaces fit in a tool call.
+- Note that `chat --agent` finds only the 50 most recently updated agents,
+  that `tasks list` includes other members' Tasks, and that an exported `ZERO_CACHE_URL` makes
+  reads time out.
+- Document the `personal_device_agent_consent` error code.
+
 ## [0.7.0] - 2026-11-04
 
 Verified against nebula-ai CLI 0.1.26.
