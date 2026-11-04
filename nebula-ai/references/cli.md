@@ -1,12 +1,12 @@
 # nebula-ai CLI reference
 
-Commands relevant to delegation in nebula-ai 0.1.20. For anything else, read
+Commands relevant to delegation in nebula-ai 0.1.26. For anything else, read
 the command's `--help` output before running it.
 
 ## Install and sign in
 
 ```sh
-npm install --global nebula-ai@0.1.20
+npm install --global nebula-ai@0.1.26
 nebula-ai --version
 nebula-ai login
 nebula-ai status
@@ -47,17 +47,17 @@ before switching.
 ```sh
 nebula-ai --json agents list
 nebula-ai --json agents get <agent>
-nebula-ai --json agents accounts <agent>
 nebula-ai --json agents skills list <agent-id>
 ```
 
-`agents get` and `agents accounts` accept an ID or slug. `chat --agent`
-accepts an ID, a slug, or a case-insensitive name. Without `--agent`, chat uses
-the first enabled, non-system agent.
+`agents get` accepts an ID or handle. `chat --agent` accepts an ID, a handle,
+or a case-insensitive name. Without `--agent`, chat uses the first enabled,
+non-system agent.
 
-`agents accounts` lists your connected accounts accessible through the agent.
-Agents use the connections of the person requesting work. If a connection is
-missing, ask the user to connect it. `agents set-account` is no longer supported.
+`toolkits` in the listing names the services an agent can use. Agents act
+through the connected accounts of the person requesting work, and the CLI
+cannot list or connect those accounts. If one is missing, ask the user to
+connect it in Nebula.
 
 ## Chat
 
@@ -69,7 +69,7 @@ nebula-ai --json --no-color chat --no-stream --agent "<agent>" --context "docs/*
 
 | Option | Effect |
 |---|---|
-| `-a, --agent <agent>` | Send to this agent's direct-message thread. |
+| `-a, --agent <agent>` | Send to this agent's direct-message thread: an ID, handle, or name. |
 | `-t, --task <thread-id>` | Send to an existing thread. Takes precedence over `--agent`. |
 | `--context <glob>` | Upload matching files with the message. Repeatable. Quote the glob. At most 50 files and 512 KiB in total; a glob that matches nothing is an error. |
 | `--no-stream` | Wait and print one result. Always use it for automation. |
@@ -80,42 +80,26 @@ option.
 
 ## Threads
 
-The CLI calls agent conversations Tasks. `tasks` commands and `--task` take
-the `thread_id` returned by `chat`. Channels organize Tasks, calls and Miniapps.
+The CLI calls agent conversations Tasks. `tasks` commands, `--task`, and
+`messages list --task` take the `thread_id` returned by `chat`.
 
 ```sh
 nebula-ai --json tasks list --limit 20
-nebula-ai --json tasks list --archived
+nebula-ai --json tasks list --channel <channel>
 nebula-ai --json tasks get <thread-id>
-nebula-ai --json tasks status <thread-id>
-nebula-ai --json tasks messages --limit 50 <thread-id>
-nebula-ai --json tasks create --agent <agent-id> --title "<title>"
+nebula-ai --json messages list --task <thread-id> --limit 50
+nebula-ai --json tasks create --agent <agent-handle> -- "<task>"
 ```
 
-`tasks status` reports the thread's current work status. `tasks create`
-starts a separate thread addressed to an agent; use it when unrelated work
-should not share the agent's direct-message history.
+`tasks get` shows a Task's title, Channel, agent, and work status.
+`messages list --task` prints the most recent messages, oldest first.
 
-## Integrations
-
-```sh
-nebula-ai --json integrations list
-nebula-ai integrations connect <provider>
-nebula-ai integrations disconnect <provider> [account-id]
-```
-
-`connect` starts an authorization flow the user completes in a browser.
-Connecting or disconnecting changes external authorization and always requires
-explicit approval. If a service is not offered here, ask the user to connect it
-in Nebula rather than collecting credentials.
-
-## Usage
-
-```sh
-nebula-ai --json usage --days 7
-```
-
-Reports workspace token usage and cost for 1 to 365 days (default 7).
+`tasks create` starts a separate Task for an agent, when unrelated work should
+not share the agent's direct-message history. It sends `<task>` to the agent
+like `chat` does, so the same approval rules apply, but it does not wait for
+the reply. The Task starts in Home unless `--channel <channel>` names another
+Channel, and the agent must be on that Channel's roster. Continue it with
+`chat --task`.
 
 ## Exit codes and failures
 
@@ -123,12 +107,13 @@ Reports workspace token usage and cost for 1 to 365 days (default 7).
 |---|---|---|
 | CLI missing | The shell reports `command not found` (exit `127`) | Ask, then install the verified version. |
 | Not signed in | Exit `3`; `status` prints `auth.logged_in` false, other commands print an `auth_required` error | Run `nebula-ai login` and wait for the user. |
-| Unknown command or option | Exit `1`, `usage` error | Check `--help`; the installed CLI may differ from 0.1.20. |
-| Agent not found | Exit `1`, nothing sent | Re-list agents; do not substitute another. |
+| Unknown command or option | Exit `1`, `usage` error | Check `--help`; the installed CLI may differ from 0.1.26. |
+| Agent or Task not found | Exit `1`, nothing sent | Re-list agents or Tasks; do not substitute another. |
 | Run failed | Exit `1`, JSON printed with `status` `failed` | Report it once. |
 | Run waiting for the user | Exit `4`, JSON printed with `status` `waiting` and `pending` | See the result handling in SKILL.md. |
-| Chat waited 15 minutes or was interrupted | Exit `5`, JSON printed with `status` `incomplete` | Check `tasks status`; do not resend. |
-| Chat reply unreadable | Exit `5`, `outcome_unknown` error | Read the thread with `tasks messages`; do not resend. |
+| Chat waited 15 minutes or was interrupted | Exit `5`, JSON printed with `status` `incomplete` | Check `tasks get`; do not resend. |
+| Chat reply unreadable, or a write got no answer in 30 seconds | Exit `5`, `outcome_unknown` error | Read the thread with `messages list --task`; do not resend. |
+| A read got no answer in 30 seconds | Exit `1`, `error` | Try once more, then report it. |
 | Network or service error | Exit `1` | Report it once; do not loop. |
 
 With `--json`, each failure prints exactly one line on stderr,

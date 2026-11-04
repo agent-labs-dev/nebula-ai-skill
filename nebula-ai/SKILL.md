@@ -2,11 +2,11 @@
 name: nebula-ai
 description: Install and use the Nebula AI CLI to delegate tasks to specialized Nebula agents and work through user-authorized services such as Gmail, Slack, GitHub, Linear, and calendars without exposing service credentials. Use when the user asks to use Nebula, contact or delegate to a Nebula agent, inspect Nebula channels or threads, continue delegated work, or act through an account connected to their Nebula workspace.
 license: MIT
-compatibility: Requires the nebula-ai CLI 0.1.20 (npm package nebula-ai), Node.js 18 or later, and network access to nebula.gg. Signing in opens a browser.
+compatibility: Requires the nebula-ai CLI 0.1.26 (npm package nebula-ai), Node.js 18 or later, and network access to nebula.gg. Signing in opens a browser.
 metadata:
   author: Agent Labs
-  version: "0.6.0"
-  cli-version: "0.1.20"
+  version: "0.7.0"
+  cli-version: "0.1.26"
 ---
 
 # Nebula AI
@@ -26,8 +26,8 @@ before running anything else.
 1. Run `nebula-ai --version`.
    - Command not found: the CLI is missing. Ask before changing the machine,
      then install the verified version with
-     `npm install --global nebula-ai@0.1.20`.
-   - A version other than `0.1.20`: continue, but tell the user if a command
+     `npm install --global nebula-ai@0.1.26`.
+   - A version other than `0.1.26`: continue, but tell the user if a command
      or output shape does not match this guide. Do not upgrade or downgrade
      the CLI without approval.
 2. Run `nebula-ai --json status`.
@@ -44,18 +44,19 @@ before running anything else.
 
 ## Choose an agent
 
-1. List agents with `nebula-ai --json agents list`. Choose by `name`, `slug`,
-   and `description`; skip entries where `is_disabled` is true. Do not invent
-   an agent. If `can_run` is false, report `run_blocked_detail` and stop
-   rather than substituting another agent.
-2. The listing summarizes tools with `toolkit_count`. When the task depends on a
-   specific service, confirm it with `nebula-ai --json agents get <agent>`
-   (`toolkits`) and `nebula-ai --json agents accounts <agent>`, which shows
-   your connected accounts accessible through that agent and their `status`.
-   Accounts are resolved from the person requesting work, not bound to agents.
-3. If the needed account is missing or inactive, name the service and ask the
-   user to connect it in Nebula. Do not substitute another account,
-   agent, or workspace.
+1. List agents with `nebula-ai --json agents list`. Choose by `name`,
+   `handle`, and `description`; skip entries where `is_disabled` is true. Do
+   not invent an agent. If `can_run` is false, report `run_blocked_detail` and
+   stop rather than substituting another agent. Do not choose the workspace's
+   own `Nebula` agent (handle `nebula`): it talks in Channels and runs no Task,
+   so a `chat` with it fails after the message is sent.
+2. When the task depends on a specific service, check that the agent's
+   `toolkits` include it. Agents act through the connected accounts of the
+   person requesting work; the CLI cannot list those accounts or their status.
+3. If no agent has the needed toolkit, or Nebula reports the account missing
+   (a `connection_request` in `pending`), name the service and ask the user to
+   connect it in Nebula. Do not substitute another account, agent, or
+   workspace.
 
 ## Delegate
 
@@ -68,7 +69,7 @@ before running anything else.
    not read as an option:
 
    ```sh
-   nebula-ai --json chat --no-stream --agent "<agent-slug>" -- "<task>"
+   nebula-ai --json chat --no-stream --agent "<agent-handle>" -- "<task>"
    ```
 
    The call blocks until the agent finishes or needs the user, for up to 15
@@ -101,9 +102,9 @@ relying on exit `0`.
   `nebula-ai chat --resume <thread-id>`. The agent is paused, not stopped.
   Never approve on the user's behalf.
 - `incomplete` (exit `5`): the agent had not finished when the CLI stopped
-  waiting. Check `nebula-ai --json tasks status <thread-id>`: if
-  `state.turns.work_status` is `working`, read the thread later; if it is
-  `waiting`, handle it as above. A non-null `pending` with `kind: ask_user`
+  waiting. Check `nebula-ai --json tasks get <thread-id>`: if `work_status`
+  is `working`, read the thread later; if it is `waiting`, handle it as
+  above. A non-null `pending` with `kind: ask_user`
   can accompany an incomplete result; show the question and have the user
   answer in Nebula. Do not resend.
 
@@ -120,8 +121,8 @@ paste them. Output field details are in
 
 ## Continue a conversation
 
-The CLI calls agent conversations Tasks. `tasks` commands and `--task` take
-the `thread_id` returned by `chat`. Channels organize Tasks, calls and Miniapps.
+The CLI calls agent conversations Tasks. `tasks` commands, `--task`, and
+`messages list --task` take the `thread_id` returned by `chat`.
 
 - Follow up in the same thread with the exact `thread_id`:
 
@@ -130,15 +131,17 @@ the `thread_id` returned by `chat`. Channels organize Tasks, calls and Miniapps.
   ```
 
 - Read what happened in a thread with
-  `nebula-ai --json tasks messages --limit 50 <thread-id>`.
+  `nebula-ai --json messages list --task <thread-id> --limit 50`.
 - Without `--task`, `chat` reuses the agent's direct-message thread, so
   earlier requests stay in the agent's context. When the user wants unrelated
-  work kept separate, create a thread with
-  `nebula-ai --json tasks create --agent <agent-id> --title "<title>"` and
-  continue in the returned `id`.
+  work kept separate, start a new Task with
+  `nebula-ai --json tasks create --agent <agent-handle> -- "<task>"`. It
+  follows the same approval rules as `chat`, does not wait for the reply, and
+  prints the new Task's `id`. Follow it with `tasks get` and
+  `messages list --task`, and continue it with `chat --task`.
 - If the `thread_id` was lost, find the thread with
   `nebula-ai --json tasks list --limit 20` and confirm it with
-  `tasks messages` before continuing. Do not guess.
+  `messages list --task` before continuing. Do not guess.
 
 ## Handle connected services safely
 
@@ -153,6 +156,7 @@ the `thread_id` returned by `chat`. Channels organize Tasks, calls and Miniapps.
 
 This skill covers delegation. Unless the user explicitly asks, do not use
 voice calls (`call`), computer use (`local-device`, `install`,
-`uninstall`), billing, user variables, profile changes, model administration,
-or agent creation and editing. Each changes the user's machine, account, or
+`uninstall`), scheduled jobs (`jobs`), Miniapps, skills, Channel
+administration, posting or editing Channel messages, or agent creation and
+editing. Each changes the user's machine, account, or
 workspace; confirm the exact command with `--help` and get approval first.
