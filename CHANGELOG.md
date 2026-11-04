@@ -4,6 +4,29 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the skill uses
 [Semantic Versioning](https://semver.org).
 
+## [0.7.0] - 2026-11-04
+
+Verified against nebula-ai CLI 0.1.26.
+
+### Changed
+
+- Choose agents by `handle`; `agents list` no longer prints `slug`.
+- Check a Task's work status with `tasks get`, which replaces `tasks status`.
+- Read a Task's messages with `messages list --task`, which replaces
+  `tasks messages`.
+- `tasks create` takes the task text and starts the work, instead of creating
+  an empty titled thread.
+- Check that an agent's `toolkits` cover the service a task needs. The CLI no
+  longer lists connected accounts.
+- Document the 0.1.26 JSON shapes for agents, Tasks, messages and writes.
+- Do not choose the workspace's own `Nebula` agent for `chat`: it runs no Task,
+  so the chat fails after the message is sent.
+
+### Removed
+
+- Instructions for `agents accounts`, `integrations` and `usage`, which the
+  CLI no longer has.
+
 ## [0.6.0] - 2026-10-09
 
 Verified against nebula-ai CLI 0.1.20.

@@ -5,7 +5,7 @@
     {
       "id": 1,
       "prompt": "Ask my Nebula inbox agent to summarize unread email from today.",
-      "expected_output": "Checks nebula-ai --version and nebula-ai --json status, lists agents, picks the matching agent by name or description, delegates with chat --agent, and reports final_message, the agent name, and the thread_id. Does not ask for approval, because the task is read-only."
+      "expected_output": "Checks nebula-ai --version and nebula-ai --json status, lists agents, picks the matching agent by name, handle, or description, delegates with chat --agent, and reports final_message, the agent name, and the thread_id. Does not ask for approval, because the task is read-only."
     },
     {
       "id": 2,
@@ -15,17 +15,17 @@
     {
       "id": 3,
       "prompt": "Use Nebula to post the release notes in our Slack #general channel.",
-      "expected_output": "Checks that the requester has an active Slack connection accessible through the chosen agent with the accounts command. If none is active, names the missing account and asks the user to connect it instead of choosing another agent or account."
+      "expected_output": "Chooses an agent whose toolkits include Slack and gets approval for the post. If no agent has Slack, or the result's pending is a connection_request, names the missing account and asks the user to connect it in Nebula instead of choosing another agent or account."
     },
     {
       "id": 4,
       "prompt": "Follow up with the Nebula agent from before and ask it to add the action items too.",
-      "expected_output": "Continues with chat --task using the retained thread_id. If the thread_id is unknown, finds the thread through tasks list and tasks messages and confirms it before sending; does not guess."
+      "expected_output": "Continues with chat --task using the retained thread_id. If the thread_id is unknown, finds the thread through tasks list and messages list --task and confirms it before sending; does not guess."
     },
     {
       "id": 5,
       "prompt": "Ask Nebula to create the Linear issues we discussed.",
-      "expected_output": "Gets approval for the write, delegates, and if the result status is waiting (exit 4), tells the user what pending asks and has them review it in Nebula. If the status is incomplete, checks tasks status instead of resending. Never approves on the user's behalf."
+      "expected_output": "Gets approval for the write, delegates, and if the result status is waiting (exit 4), tells the user what pending asks and has them review it in Nebula. If the status is incomplete, checks tasks get instead of resending. Never approves on the user's behalf."
     },
     {
       "id": 6,

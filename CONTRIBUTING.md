@@ -48,7 +48,7 @@ CI fails when npm publishes a newer `nebula-ai` than the one in
 
 - Write instructions as direct, imperative steps an agent can follow.
 - Describe only released, publicly documented CLI behavior.
-- Use placeholders such as `<agent-slug>` and `<thread-id>`, never real IDs,
+- Use placeholders such as `<agent-handle>` and `<thread-id>`, never real IDs,
   accounts, or email addresses.
 - Call the CLI directly. If a task needs a helper script, fix the CLI instead.
 
