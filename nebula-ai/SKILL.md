@@ -138,7 +138,9 @@ The CLI calls agent conversations Tasks. `tasks` commands, `--task`, and
   `nebula-ai --json tasks create --agent <agent-handle> -- "<task>"`. It
   follows the same approval rules as `chat`, does not wait for the reply, and
   prints the new Task's `id`. Follow it with `tasks get` and
-  `messages list --task`, and continue it with `chat --task`.
+  `messages list --task`, and continue it with `chat --task`. If it prints
+  no `id`, the Task may still have been created: find it with `tasks list`
+  and confirm it with `messages list --task` rather than creating it again.
 - If the `thread_id` was lost, find the thread with
   `nebula-ai --json tasks list --limit 20` and confirm it with
   `messages list --task` before continuing. Do not guess.
