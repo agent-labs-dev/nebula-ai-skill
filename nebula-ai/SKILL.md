@@ -85,6 +85,11 @@ before running anything else.
 
    `-a` is required and takes the agent's `handle` only; an ID or display
    name is refused with `None of the tagged agents can take work here`.
+   The Task starts in Home, so the agent must be on Home's roster: check
+   `nebula-ai --json channels agents home`. If it is not there, find a
+   Channel whose roster has it (`channels list`, then `channels agents
+   <channel>`) and add `--channel <channel>`. If no Channel has it, ask the
+   user before adding it to one with `channels add-agent`.
    The command returns once the message is sent and prints the Task's `id`: keep it as the
    `thread_id`, then follow [Wait for the result](#wait-for-the-result).
    Any other outcome, including an exit `1` error, can come after the
@@ -112,11 +117,13 @@ Poll the Task rather than holding one long call open:
      them review it in Nebula, for example with
      `nebula-ai chat --resume <thread-id>`. Never approve on their behalf.
    - `paused`: a durable wait that Nebula resumes on its own. Poll again.
-   - `completed`, `failed`, or `canceled`: settled. Read the thread.
+   - `failed` or `canceled`: settled. Read the thread and report the
+     outcome, even when no agent message follows yours.
+   - `completed`: settled once an agent message follows yours. Right after
+     sending, `phase` can read `completed` before the agent's turn opens,
+     so until that message appears, poll again.
 2. Read the reply with
-   `nebula-ai --json messages list --task <thread-id> --limit 20`. Right
-   after sending, `phase` can read `completed` before the agent's turn
-   opens, so the work is settled only once an agent message follows yours.
+   `nebula-ai --json messages list --task <thread-id> --limit 20`.
 3. In a headless session, keep polling until the Task settles before you
    finish, and report the agent's reply, not just that the task was sent.
 
