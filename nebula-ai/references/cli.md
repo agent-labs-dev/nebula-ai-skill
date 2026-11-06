@@ -1,12 +1,12 @@
 # nebula-ai CLI reference
 
-Commands relevant to delegation in nebula-ai 0.1.26. For anything else, read
+Commands relevant to delegation in nebula-ai 0.1.33. For anything else, read
 the command's `--help` output before running it.
 
 ## Install and sign in
 
 ```sh
-npm install --global nebula-ai@0.1.26
+npm install --global nebula-ai@0.1.33
 nebula-ai --version
 nebula-ai login
 nebula-ai status
@@ -29,7 +29,7 @@ Place global options before the command.
 |---|---|
 | `--json` | Machine-readable output where supported. See [json-output.md](json-output.md). |
 | `--no-color` | Disable ANSI colors. |
-| `--workspace <id-or-slug>` | Use this workspace for this command only. An unknown value warns and falls back to the last-used workspace. |
+| `--workspace <id-or-slug>` | Use this workspace for this command only. An unknown value is refused with a `usage` error (exit `2`). |
 | `--log-level <level>` | `error`, `warn`, `info`, `debug`, or `trace`, written to stderr. |
 
 ## Workspaces
@@ -46,13 +46,26 @@ before switching.
 
 ```sh
 nebula-ai --json agents list
+nebula-ai --json agents list | jq '.[] | {handle, name, description, toolkits, can_run, run_blocked_detail, is_disabled}'
+nebula-ai --json agents list --query <text>
 nebula-ai --json agents get <agent>
 nebula-ai --json agents skills list <agent-id>
 ```
 
-`agents get` accepts an ID or handle. `chat --agent` accepts an ID, a handle,
-or a case-insensitive name. Without `--agent`, chat uses the first enabled,
-non-system agent.
+`agents list` prints every agent, which runs to hundreds of kilobytes on a
+large workspace; project the fields you need with `jq`. `--query <text>`
+keeps agents whose name or handle contains the text, `--runnable` only those
+you can run, and `--limit <n>` caps the count.
+
+How each command finds an agent:
+
+| Command | Accepts | Searches |
+|---|---|---|
+| `agents get` | ID or handle | Every agent |
+| `tasks create -a` | Handle only; an ID or name is refused | The Channel's roster |
+| `chat --agent` | ID, handle, or case-insensitive name | Every agent you can read; a Channel lead such as `nebula` is refused before sending |
+
+Without `--agent`, chat uses the first enabled, non-system agent.
 
 `toolkits` in the listing names the services an agent can use. Agents act
 through the connected accounts of the person requesting work, and the CLI
@@ -62,17 +75,17 @@ connect it in Nebula.
 ## Chat
 
 ```sh
-nebula-ai --json --no-color chat --no-stream --agent "<agent>" -- "<task>"
 nebula-ai --json --no-color chat --no-stream --task "<thread-id>" -- "<follow-up>"
 nebula-ai --json --no-color chat --no-stream --agent "<agent>" --context "docs/*.md" -- "<task>"
 ```
 
 | Option | Effect |
 |---|---|
-| `-a, --agent <agent>` | Send to this agent's direct-message thread: an ID, handle, or name. |
+| `-a, --agent <agent>` | Send to this agent's direct-message thread: an ID, handle, or name. Every request sent this way shares one thread and keeps its first title, so start unrelated work with `tasks create`. |
+| `--new` | With `--agent`, start a new private thread with the agent instead of its direct-message thread. Cannot be combined with `--task`. |
 | `-t, --task <thread-id>` | Send to an existing thread. Takes precedence over `--agent`. |
 | `--context <glob>` | Upload matching files with the message. Repeatable. Quote the glob. At most 50 files and 512 KiB in total; a glob that matches nothing is an error. |
-| `--no-stream` | Wait and print one result. Always use it for automation. |
+| `--no-stream` | Wait, for up to 15 minutes, and print one result. Always use it for automation; run it in the background when your tool calls are capped below 15 minutes. |
 | `-r, --resume <thread-id>` | Open the interactive terminal UI on a thread. For the user, not for automation; it cannot be combined with a message. |
 
 Put `--` before the message so text beginning with `-` is not read as an
@@ -85,21 +98,46 @@ The CLI calls agent conversations Tasks. `tasks` commands, `--task`, and
 
 ```sh
 nebula-ai --json tasks list --limit 20
+nebula-ai --json tasks list --mine
 nebula-ai --json tasks list --channel <channel>
 nebula-ai --json tasks get <thread-id>
+nebula-ai --json tasks wait <thread-id>
 nebula-ai --json messages list --task <thread-id> --limit 50
-nebula-ai --json tasks create --agent <agent-handle> -- "<task>"
+nebula-ai --json tasks create -a <agent-handle> -- "<task>"
 ```
 
-`tasks get` shows a Task's title, Channel, agent, and work status.
+`tasks list` returns 20 Tasks unless `--limit` asks for more. It draws from
+every Task you can see in the workspace, including other members' Tasks:
+active and unread Tasks come first, then the rest, newest first. `--mine`
+keeps only Tasks you own or take part in. `tasks get` shows a Task's title,
+Channel, agent, and `phase`; an archived or dismissed Task is `not_found`.
+`tasks wait` blocks on the Task's newest turn for up to 15 minutes and
+prints the `chat --no-stream` result with its exit codes; when the Task opens
+no turn within 15 seconds it exits `5` and prints nothing.
 `messages list --task` prints the most recent messages, oldest first.
 
-`tasks create` starts a separate Task for an agent, when unrelated work should
-not share the agent's direct-message history. It sends `<task>` to the agent
-like `chat` does, so the same approval rules apply, but it does not wait for
-the reply. The Task starts in Home unless `--channel <channel>` names another
-Channel, and the agent must be on that Channel's roster. Continue it with
-`chat --task`.
+`tasks create` is the way to start new work. It sends `<task>` to the agent
+like `chat` does, so the same approval rules apply, but it returns once the
+message is sent instead of waiting for the reply; poll `tasks get` on
+`phase` and read the reply with `messages list --task`. `-a` is required and
+takes a handle only. The Task starts in Home unless `--channel <channel>`
+names another Channel by handle or ID, and the agent must be on that
+Channel's roster. It cannot attach files. Continue it with `chat --task`.
+
+## Approvals
+
+```sh
+nebula-ai --json approvals list
+nebula-ai --json approvals approve <id>
+nebula-ai --json approvals deny <id> --reason "<why>"
+```
+
+`approvals list` prints the asks agents are waiting on you for, newest
+first. `approve` and `deny` answer one of them by its `id`, and only write
+and plan approvals; any other ask is answered in the Nebula app.
+`approve --always` allows that action on this device from now on. Run `approve` or
+`deny` only on the user's explicit decision for that ask, never on their
+behalf.
 
 ## Exit codes and failures
 
@@ -107,16 +145,22 @@ Channel, and the agent must be on that Channel's roster. Continue it with
 |---|---|---|
 | CLI missing | The shell reports `command not found` (exit `127`) | Ask, then install the verified version. |
 | Not signed in | Exit `3`; `status` prints `auth.logged_in` false, other commands print an `auth_required` error | Run `nebula-ai login` and wait for the user. |
-| Unknown command or option | Exit `1`, `usage` error | Check `--help`; the installed CLI may differ from 0.1.26. |
-| Agent or Task not found | Exit `1`, nothing sent | Re-list agents or Tasks; do not substitute another. |
+| Unknown command, option or workspace | Exit `2`, `usage` error | Check `--help`; the installed CLI may differ from 0.1.33. |
+| Task, message or `agents get` target not found | Exit `6`, `not_found` error, nothing sent | Re-list agents or Tasks; do not substitute another. |
+| `chat --agent` names no agent | Exit `1`, `error`, nothing sent | Re-list agents; do not substitute another. |
 | Run failed | Exit `1`, JSON printed with `status` `failed` | Report it once. |
 | Run waiting for the user | Exit `4`, JSON printed with `status` `waiting` and `pending` | See the result handling in SKILL.md. |
-| Chat waited 15 minutes or was interrupted | Exit `5`, JSON printed with `status` `incomplete` | Check `tasks get`; do not resend. |
+| `chat` or `tasks wait` waited 15 minutes or was interrupted | Exit `5`, JSON printed with `status` `incomplete` | Poll `tasks get` on `phase`; do not resend. |
 | Chat reply unreadable, or a write got no answer in 30 seconds | Exit `5`, `outcome_unknown` error | Read the thread with `messages list --task`; do not resend. |
-| A read got no answer in 30 seconds | Exit `1`, `error` | Try once more, then report it. |
+| A read got no answer in 30 seconds | Exit `7`, `timeout` error | Try once more. If it repeats, check for an exported `NEBULA_ZERO_CACHE_URL` and retry with it unset. Then report it. |
+| Sync unreachable | Exit `1`, `error`: `Could not reach Nebula sync at <url>` | Check for a `NEBULA_` override in the environment (the CLI names them on stderr without `--json`), retry without it, then report it. |
 | Network or service error | Exit `1` | Report it once; do not loop. |
 
 With `--json`, each failure prints exactly one line on stderr,
-`{"error":{"code":"...","message":"..."}}`. `code` is `error`, `usage`,
-`auth_required`, or `outcome_unknown`. Without `--json`, errors are plain
-text.
+`{"error":{"code":"...","message":"...","trace_id":"..."}}`; `trace_id` is
+absent on a `usage` error. `code` and exit are `error` (`1`), `usage` (`2`),
+`auth_required` (`3`), `waiting` (`4`, for example `tasks stop` on a Task
+with an open question), `outcome_unknown` (`5`), `not_found` (`6`),
+`timeout` (`7`), or `personal_device_agent_consent` (`1`: an agent that runs
+on the user's computer joins a Channel only with their confirmation in the
+app). Without `--json`, errors are plain text followed by a `Trace:` line.
