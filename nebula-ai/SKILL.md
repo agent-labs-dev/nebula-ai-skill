@@ -96,7 +96,7 @@ before running anything else.
    `thread_id`, then follow [Wait for the result](#wait-for-the-result).
    Any other outcome, including an exit `1` error, can come after the
    message was posted: before sending again, which could repeat a write,
-   look for the Task with `tasks list` and confirm it with
+   look for the Task with `tasks list --mine` and confirm it with
    `messages list --task`. Report permission refusals without substituting
    another agent. For a follow-up on the same work, see
    [Continue a conversation](#continue-a-conversation).
@@ -144,8 +144,9 @@ When a Task is `waiting`, or a result reads `waiting`, list what it asks:
 nebula-ai --json approvals list
 ```
 
-Tell the user each ask's `task`, `agent`, `title`, and `summary`, and have
-them decide. Never approve on their behalf. Run
+Keep only the asks whose `task_id` is the waiting Task's `thread_id`; the
+list holds every ask waiting on the user. Tell the user each one's `task`,
+`agent`, `title`, and `summary`, and have them decide. Never approve on their behalf. Run
 `nebula-ai --json approvals approve <id>` or
 `nebula-ai --json approvals deny <id> --reason "<why>"` only when the user
 has explicitly decided that ask, and never add `--always` unless they asked
