@@ -4,9 +4,9 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the skill uses
 [Semantic Versioning](https://semver.org).
 
-## [0.8.0] - 2026-11-04
+## [0.8.0] - 2026-11-06
 
-Verified against nebula-ai CLI 0.1.26.
+Verified against nebula-ai CLI 0.1.33.
 
 ### Changed
 
@@ -21,11 +21,22 @@ Verified against nebula-ai CLI 0.1.26.
   and can read `idle` while a question or approval is still open.
 - Tell the user to run `npx skills update nebula-ai` when the installed CLI is
   newer than the skill.
-- Project `agents list` with `jq` so large workspaces fit in a tool call.
-- Note that `chat --agent` finds only the 50 most recently updated agents,
-  that `tasks list` includes other members' Tasks, and that an exported `ZERO_CACHE_URL` makes
-  reads time out.
-- Document the `personal_device_agent_consent` error code.
+- Project `agents list` with `jq` so large workspaces fit in a tool call,
+  or narrow it with `--query`.
+- List a waiting Task's asks with `approvals list` and relay them; run
+  `approvals approve` or `deny` only on the user's explicit decision.
+- Offer `tasks wait` as the blocking form of waiting on a Task.
+- Find a lost Task with `tasks list --mine`; without it the list includes
+  other members' Tasks.
+- Attach files to new work with `chat --new --agent`, which opens a fresh
+  thread instead of the agent's direct-message thread.
+- Document the 0.1.33 exit codes and error codes: `usage` (2), `not_found`
+  (6), `timeout` (7), `waiting` (4), `personal_device_agent_consent`, and
+  the `trace_id` on errors.
+- An unknown `--workspace` is now refused, `--channel` takes a Channel ID,
+  and `chat` refuses the workspace's own Nebula agent before sending.
+- Point a sync failure at `NEBULA_ZERO_CACHE_URL`; the CLI no longer reads
+  `ZERO_CACHE_URL`.
 
 ## [0.7.0] - 2026-11-04
 

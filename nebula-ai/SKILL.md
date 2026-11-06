@@ -2,11 +2,11 @@
 name: nebula-ai
 description: Install and use the Nebula AI CLI to delegate tasks to specialized Nebula agents and work through user-authorized services such as Gmail, Slack, GitHub, Linear, and calendars without exposing service credentials. Use when the user asks to use Nebula, contact or delegate to a Nebula agent, inspect Nebula channels or threads, continue delegated work, or act through an account connected to their Nebula workspace.
 license: MIT
-compatibility: Requires the nebula-ai CLI 0.1.26 (npm package nebula-ai), Node.js 18 or later, and network access to nebula.gg. Signing in opens a browser.
+compatibility: Requires the nebula-ai CLI 0.1.33 (npm package nebula-ai), Node.js 18 or later, and network access to nebula.gg. Signing in opens a browser.
 metadata:
   author: Agent Labs
   version: "0.8.0"
-  cli-version: "0.1.26"
+  cli-version: "0.1.33"
 ---
 
 # Nebula AI
@@ -26,11 +26,11 @@ before running anything else.
 1. Run `nebula-ai --version`.
    - Command not found: the CLI is missing. Ask before changing the machine,
      then install the verified version with
-     `npm install --global nebula-ai@0.1.26`.
-   - A version newer than `0.1.26`: this skill is out of date. Tell the user
+     `npm install --global nebula-ai@0.1.33`.
+   - A version newer than `0.1.33`: this skill is out of date. Tell the user
      to update it with `npx skills update nebula-ai`, or to reinstall it, then
      continue.
-   - Any version other than `0.1.26`: tell the user when a command or output
+   - Any version other than `0.1.33`: tell the user when a command or output
      shape does not match this guide. Do not upgrade or downgrade the CLI
      without approval.
 2. Run `nebula-ai --json status`.
@@ -42,8 +42,8 @@ before running anything else.
 3. If the user names a workspace, confirm it appears in
    `nebula-ai --json workspace list` before passing
    `--workspace <id-or-slug>`. It applies to that command only. An unknown
-   value only prints a warning and falls back to the last-used workspace.
-   Never switch workspaces silently.
+   value is refused with a `usage` error (exit `2`) that lists the
+   account's workspaces. Never switch workspaces silently.
 
 ## Choose an agent
 
@@ -54,13 +54,14 @@ before running anything else.
    nebula-ai --json agents list | jq '.[] | {handle, name, description, toolkits, can_run, run_blocked_detail, is_disabled}'
    ```
 
-   Without `jq`, run `nebula-ai --json agents list` and write it to a file
-   if your tool truncates output. Choose by `name`,
+   `--query <text>` keeps only agents whose name or handle contains the
+   text. Without `jq`, run `nebula-ai --json agents list` and write it to a
+   file if your tool truncates output. Choose by `name`,
    `handle`, and `description`; skip entries where `is_disabled` is true. Do
    not invent an agent. If `can_run` is false, report `run_blocked_detail` and
    stop rather than substituting another agent. Do not choose the workspace's
-   own `Nebula` agent (handle `nebula`): it talks in Channels and runs no Task,
-   so a `chat` with it fails after the message is sent.
+   own `Nebula` agent (handle `nebula`): it talks in Channels and runs no
+   Task, so `chat` refuses it.
 2. When the task depends on a specific service, check that the agent's
    `toolkits` include it. Agents act through the connected accounts of the
    person requesting work; the CLI cannot list those accounts or their status.
@@ -88,7 +89,8 @@ before running anything else.
    The Task starts in Home, so the agent must be on Home's roster: check
    `nebula-ai --json channels agents home`. If it is not there, find a
    Channel whose roster has it (`channels list`, then `channels agents
-   <channel>`) and add `--channel <channel>`. If no Channel has it, ask the
+   <channel>`) and add `--channel <channel>`, which takes a Channel handle
+   or ID. If no Channel has it, ask the
    user before adding it to one with `channels add-agent`.
    The command returns once the message is sent and prints the Task's `id`: keep it as the
    `thread_id`, then follow [Wait for the result](#wait-for-the-result).
@@ -99,7 +101,8 @@ before running anything else.
    another agent. For a follow-up on the same work, see
    [Continue a conversation](#continue-a-conversation).
 4. Attach local files only when the user asked for that exact disclosure.
-   `tasks create` cannot attach them, so send with `chat` instead and add
+   `tasks create` cannot attach them, so send new work with
+   `chat --no-stream --new --agent <agent-handle>` instead and add
    `--context "<glob>"`, repeatable, quoted so the CLI expands it relative to
    the current directory. Uploads are limited to 50 files and 512 KiB in
    total.
@@ -113,9 +116,8 @@ Poll the Task rather than holding one long call open:
    can miss a question or approval that is still open.
    - `queued`: accepted, not started yet. Poll again.
    - `running`: the agent is working. Poll again.
-   - `waiting`: Nebula needs the user's decision. Tell the user and have
-     them review it in Nebula, for example with
-     `nebula-ai chat --resume <thread-id>`. Never approve on their behalf.
+   - `waiting`: Nebula needs the user's decision. See
+     [Relay an approval](#relay-an-approval).
    - `paused`: a durable wait that Nebula resumes on its own. Poll again.
    - `failed` or `canceled`: settled. Read the thread and report the
      outcome, even when no agent message follows yours.
@@ -126,6 +128,30 @@ Poll the Task rather than holding one long call open:
    `nebula-ai --json messages list --task <thread-id> --limit 20`.
 3. In a headless session, keep polling until the Task settles before you
    finish, and report the agent's reply, not just that the task was sent.
+
+`nebula-ai --json tasks wait <thread-id>` is the blocking form: it waits on
+the Task's newest turn for up to 15 minutes and prints the same object and
+exit codes as `chat --no-stream` (see
+[Check a chat result](#check-a-chat-result)), with `agent` `null`. Use it
+only where `chat --no-stream` could run. Exit `5` with nothing printed means
+the Task opened no turn within 15 seconds: poll `tasks get` instead.
+
+## Relay an approval
+
+When a Task is `waiting`, or a result reads `waiting`, list what it asks:
+
+```sh
+nebula-ai --json approvals list
+```
+
+Tell the user each ask's `task`, `agent`, `title`, and `summary`, and have
+them decide. Never approve on their behalf. Run
+`nebula-ai --json approvals approve <id>` or
+`nebula-ai --json approvals deny <id> --reason "<why>"` only when the user
+has explicitly decided that ask, and never add `--always` unless they asked
+for it. Only write and plan approvals take a yes or no here; for any other
+ask, such as a question or a connection request, have the user answer in
+Nebula, for example with `nebula-ai chat --resume <thread-id>`.
 
 ## Check a chat result
 
@@ -143,10 +169,8 @@ rather than relying on exit `0`.
 - `failed` (exit `1`): report the failure once. Do not retry a write without
   asking.
 - `waiting` (exit `4`): Nebula needs the user's decision, described by
-  `pending` (`kind`, `title`, `summary`). Tell the user what it asks and have
-  them review it in Nebula; they can open the thread interactively with
-  `nebula-ai chat --resume <thread-id>`. The agent is paused, not stopped.
-  Never approve on the user's behalf.
+  `pending` (`kind`, `title`, `summary`). The agent is paused, not stopped.
+  Follow [Relay an approval](#relay-an-approval).
 - `incomplete` (exit `5`): the CLI stopped waiting, after 15 minutes or an
   interruption. The task was sent, and an empty `final_message` does not
   mean it failed: follow [Wait for the result](#wait-for-the-result). A
@@ -157,14 +181,17 @@ Your own timeout or interruption of `chat` also means the task was sent with
 an unknown outcome: wait for the result instead of resending.
 
 With `--json`, failures print one line on stderr,
-`{"error":{"code":"...","message":"..."}}`, with no result on stdout. A
-`code` of `auth_required` (exit `3`) means sign in again with
+`{"error":{"code":"...","message":"...","trace_id":"..."}}`, with no result
+on stdout. A `code` of `auth_required` (exit `3`) means sign in again with
 `nebula-ai login`. `outcome_unknown` (exit `5`) means the task was sent but
-the reply could not be read: read the thread, do not resend. If reads keep
-failing with `No answer came back in 30 seconds`, check whether the shell
-exports `ZERO_CACHE_URL`, which points the CLI at another sync service, and
-retry with it unset (`env -u ZERO_CACHE_URL nebula-ai ...`). Report any other
-error once.
+the reply could not be read: read the thread, do not resend. `not_found`
+(exit `6`) means the Task or record does not exist or is not visible to
+you; re-list rather than guess. `timeout` (exit `7`) means a read got no
+answer in 30 seconds: try once more. If reads keep timing out or fail with
+`Could not reach Nebula sync at <url>`, check whether the shell exports
+`NEBULA_ZERO_CACHE_URL` or another `NEBULA_` override (the CLI names them on
+stderr without `--json`) and retry with it unset. Report any other error
+once, with its `trace_id`.
 
 Inspect `events` only when you need execution details; summarize rather than
 paste them. Output field details are in
@@ -189,14 +216,14 @@ the `id` that `tasks create` prints.
 - `chat --agent <agent-handle>` sends to the agent's single direct-message
   thread, which keeps every earlier request in context under the first
   request's title. Use it only when the user wants that thread; start new
-  work with `tasks create`. It looks the agent up among the 50 most recently
-  updated agents only, so on a large workspace it can report
-  `Agent not found` for a valid handle; `tasks create -a` still reaches it.
+  work with `tasks create`. `chat --new --agent <agent-handle>` starts a
+  fresh private thread with the agent instead.
 - If the `thread_id` was lost, find the thread with
-  `nebula-ai --json tasks list --limit 20`, raising `--limit` (for example
-  to `100`) when it is not there, and confirm it with `messages list --task`
-  before continuing. The list includes other members' Tasks and `agent` can
-  be `null`, so match on `title` and the messages. Do not guess.
+  `nebula-ai --json tasks list --mine --limit 20`, raising `--limit` (for
+  example to `100`) when it is not there, and confirm it with
+  `messages list --task` before continuing. Without `--mine` the list
+  includes other members' Tasks. `agent` can be `null`, so match on `title`
+  and the messages. Do not guess.
 
 ## Handle connected services safely
 
