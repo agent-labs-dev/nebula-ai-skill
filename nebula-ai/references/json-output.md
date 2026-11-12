@@ -80,16 +80,17 @@ command sent. Without `--json`, the same failures print a `Trace:` line.
 
 | `code` | Exit | Meaning |
 |---|---|---|
-| `error` | `1` | Any other failure, including a failed chat turn. |
+| `error` | `1` | Any other failure before a result. |
 | `usage` | `2` | A mistyped command, option, or argument, or an unknown or ambiguous `--workspace`. |
 | `auth_required` | `3` | Not signed in, or the saved session can no longer be used. |
 | `outcome_unknown` | `5` | A message or other write was sent and possibly accepted, but its outcome is unknown. |
 | `not_found` | `6` | The thing the command named does not exist or is not visible to you. |
 | `timeout` | `7` | Nebula did not answer in time. |
 
-Exit `4` is not an error line. A chat or `tasks wait` that needs the user's
-decision prints its result object on stdout with `status` `waiting` and
-`pending`.
+Result statuses are not error codes. A chat or `tasks wait` that needs the
+user's decision exits `4` and prints its object on stdout with `status`
+`waiting` and `pending`; a failed turn exits `1` and prints the same object
+with `status` `failed`.
 
 ## Listings
 
