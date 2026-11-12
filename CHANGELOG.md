@@ -4,37 +4,59 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the skill uses
 [Semantic Versioning](https://semver.org).
 
-## [0.8.0] - 2026-11-12
+## [0.9.0] - 2026-11-12
 
 Verified against nebula-ai CLI 0.1.41.
 
 ### Changed
 
-- Exit codes now include `usage` (`2`), `not_found` (`6`), and `timeout`
-  (`7`). JSON failures other than `usage` carry a `trace_id`.
-- `--workspace` accepts a name as well as an ID or slug, and an unknown or
-  ambiguous value stops the command with a `usage` error instead of warning
-  and falling back.
-- `chat` can address the workspace's own `Nebula` agent in Home. `chat --new`
-  starts a fresh chat with an agent, and a Home chat returns no `events`.
-- `tasks wait` waits for a Task's newest turn and prints the same result and
-  exit codes as `chat`. `tasks create --agent` is required, and `tasks list
-  --mine` limits the list to Tasks you own or participate in.
-- `agents list` gained `--limit`, `--query`, and `--runnable`; agents expose
-  `device_id`.
-- Support multiple signed-in accounts with `account list`, `account switch`,
-  and `logout --all`; `workspace list` names each workspace's account.
-- Document `approvals list`, and never approve or deny an ask for the user.
-- Messages can be sent to a person with `messages send --to`.
-- Document Task `unread_count_capped`, message `tool`, and a workspace's
-  owning `account` in the JSON reference.
+- `--workspace` accepts a workspace name as well as an ID or slug; an unknown
+  or ambiguous value stops the command with a `usage` error.
+- `chat` addresses the workspace's own `Nebula` agent in Home instead of
+  refusing it. A Home chat returns no `events`, and `--new` is a `usage` error
+  there.
+- Document multiple signed-in accounts (`account list`, `account switch`,
+  `logout --all`).
+- Separate chat result statuses from error codes in the JSON reference.
 - List the ACP editor server (`acp`) as out of scope.
 
 ### Removed
 
-- The instruction not to choose the workspace's own Nebula agent for `chat`:
-  a chat with it now runs in Home rather than failing after sending.
-- The claim that an unknown `--workspace` only warns and falls back.
+- The instruction not to choose the workspace's own Nebula agent for `chat`.
+
+## [0.8.0] - 2026-11-06
+
+Verified against nebula-ai CLI 0.1.33.
+
+### Changed
+
+- Start new work with `tasks create -a <agent-handle>` instead of
+  `chat --agent`, which piles every request into one direct-message thread.
+  Keep `chat --task` for follow-ups. `-a` takes a handle only.
+- Wait for a delegated Task by polling `tasks get` and reading
+  `messages list --task`, instead of holding `chat --no-stream` open for up
+  to 15 minutes. Run a blocking `chat` in the background when tool calls are
+  capped below 15 minutes.
+- Branch on a Task's `phase`, not `work_status`, which counts only live runs
+  and can read `idle` while a question or approval is still open.
+- Tell the user to run `npx skills update nebula-ai` when the installed CLI is
+  newer than the skill.
+- Project `agents list` with `jq` so large workspaces fit in a tool call,
+  or narrow it with `--query`.
+- List a waiting Task's asks with `approvals list` and relay them; run
+  `approvals approve` or `deny` only on the user's explicit decision.
+- Offer `tasks wait` as the blocking form of waiting on a Task.
+- Find a lost Task with `tasks list --mine`; without it the list includes
+  other members' Tasks.
+- Attach files to new work with `chat --new --agent`, which opens a fresh
+  thread instead of the agent's direct-message thread.
+- Document the 0.1.33 exit codes and error codes: `usage` (2), `not_found`
+  (6), `timeout` (7), `waiting` (4), `personal_device_agent_consent`, and
+  the `trace_id` on errors.
+- An unknown `--workspace` is now refused, `--channel` takes a Channel ID,
+  and `chat` refuses the workspace's own Nebula agent before sending.
+- Point a sync failure at `NEBULA_ZERO_CACHE_URL`; the CLI no longer reads
+  `ZERO_CACHE_URL`.
 
 ## [0.7.0] - 2026-11-04
 

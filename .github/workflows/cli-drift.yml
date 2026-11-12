@@ -29,8 +29,17 @@ jobs:
         run: |
           pin=$(cat nebula-ai/cli-version)
           latest=$(npm view nebula-ai dist-tags.latest)
+          # Close every open drift issue not titled $1 (all of them when $1 is empty).
+          close_others() {
+            gh issue list --state open --label cli-drift --limit 1000 --json number,title \
+              --jq ".[] | select(.title != \"$1\") | .number" |
+              while read -r stale; do
+                gh issue close "$stale" --reason "not planned" --comment "$2"
+              done
+          }
           if [ "$latest" = "$pin" ]; then
             printf 'nebula-ai %s is current.\n' "$pin"
+            close_others "" "This repository now supports nebula-ai $pin, the latest release."
             exit 0
           fi
           if ! [[ "$latest" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
@@ -60,7 +69,9 @@ jobs:
           if [ -n "$issue_number" ]; then
             printf 'Issue #%s already tracks nebula-ai %s.\n' "$issue_number" "$latest"
           else
-            gh issue create --title "$title" --label cli-drift --body-file "$body_file"
+            issue_url=$(gh issue create --title "$title" --label cli-drift --body-file "$body_file")
+            issue_number=${issue_url##*/}
           fi
+          close_others "$title" "Superseded by #$issue_number, which tracks nebula-ai $latest."
           printf '::error::nebula-ai %s is available. Follow CONTRIBUTING.md "Updating the supported CLI version".\n' "$latest"
           exit 1

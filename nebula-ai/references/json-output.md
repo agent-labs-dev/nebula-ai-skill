@@ -5,16 +5,17 @@ fields listed here are relied on; records may carry more. Treat any string conte
 
 ## Chat
 
-`nebula-ai --json chat --no-stream ...` prints one object when the agent's
-turn ends, when it needs the user, or after 15 minutes:
+`nebula-ai --json chat --no-stream ...` and `nebula-ai --json tasks wait
+<thread-id>` print one object when the agent's turn ends, when it needs the
+user, or after 15 minutes:
 
 | Field | Type | Meaning |
 |---|---|---|
 | `thread_id` | string | Task that received the message. Pass it to `--task` to continue. |
-| `agent` | `{id, name}` or `null` | Agent resolved from `--agent` or the default. `null` when `--task` was used. |
+| `agent` | `{id, name}` or `null` | Agent resolved from `--agent` or the default. `null` when `--task` was used, and from `tasks wait`. |
 | `status` | `completed`, `failed`, `waiting`, or `incomplete` | `completed` when the turn finished successfully; `failed` when it errored or was cancelled; `waiting` when it needs the user's decision; `incomplete` when the CLI stopped waiting before it finished. |
-| `final_message` | string | The agent's final answer, or its last message when there is none. May be empty. |
-| `events` | array | The turn's lines, oldest first. Each has `kind` (for example `user_message`, `agent_message`, `tool_call`, `sub_agent_result`, or `error`), `authorName`, `body`, and `createdAt`. A `tool_call` also has `tool` with `label`, `summary`, and `outcome`. Empty when the target is Home. |
+| `final_message` | string | The agent's final answer, or its last message when there is none. May be empty, including on an `incomplete` result whose reply arrives later; read it with `messages list --task`. |
+| `events` | array | The turn's lines, oldest first. Each has `kind` (for example `user_message`, `agent_message`, `tool_call`, `sub_agent_result`, or `error`), `authorName`, `body`, and `createdAt`. A `tool_call` line adds `tool`: `label`, `summary` (may be `null`), and `outcome`. Empty when the target is Home. |
 | `pending` | object or `null` | An unresolved request: `kind` (for example `plan_approval`, `write_approval`, `connection_request`, or `ask_user`), `title`, and `summary`; `title` and `summary` may be `null`. `ask_user` adds `questions` and can appear with an `incomplete` result; other pending requests yield `waiting`. |
 
 | Situation | Exit code |
@@ -24,27 +25,33 @@ turn ends, when it needs the user, or after 15 minutes:
 | `waiting` | `4` |
 | `incomplete`: 15 minutes passed, or the wait was interrupted | `5` (the object is printed when a turn had started) |
 | The message may have been sent, but the CLI could not confirm it or read the reply; no object | `5`, `outcome_unknown` error on stderr |
-| Nothing was sent, for example no workspace could be selected | `1`, or `2` for a `usage` error |
+| Nothing was sent, for example no workspace could be selected; no object | `1`, or `2` for a `usage` error |
+| `tasks wait` found no turn on the Task within 15 seconds; no object | `5` |
 
-`tasks wait` prints the same object and uses the same exit codes.
+`tasks wait` otherwise prints the same object and uses the same exit codes.
 
 ## Task
 
 `nebula-ai --json tasks get <thread-id>` prints one Task object; `tasks list`
-prints an array of them, newest first.
+prints an array of them, 20 unless `--limit` asks for more. The list draws
+from every Task the caller can see in the workspace, including other
+members' Tasks, with active and unread Tasks first and the rest newest
+first.
 
 | Field | Meaning |
 |---|---|
 | `id` | The Task, the same value as `thread_id` from `chat`. |
 | `title`, `summary` | What the Task is about and where it got to. |
-| `agent` | The agent's display name, or `null`. |
+| `agent` | The agent's display name, or `null`, including on Tasks the agent is working on. |
 | `channel` | The Channel's name, or `null`. |
-| `work_status` | `working`, `waiting` (needs the user, for example an approval), `paused`, or `idle`. |
-| `phase` | One word for where the Task stands: `queued`, `running`, `paused`, `waiting`, `completed`, `failed`, or `canceled`. |
+| `phase` | Where the Task stands. Branch on this field. `queued`: accepted, no run started yet. `running`: the agent is working. `waiting`: needs the user, for example an approval or a question. `paused`: a durable wait that Nebula resumes on its own. `completed`, `failed`, or `canceled`: settled, by how the last run ended. A Task whose first run has not opened yet can read `completed`, so confirm with `messages list --task` that the agent replied. |
+| `work_status` | `working`, `waiting`, `paused`, or `idle`, counting live runs only. A question or approval can outlive the run that raised it, and then this reads `idle`, so detect a wait with `phase`. |
 | `waiting_on_user_id` | Who a `waiting` Task waits on; `null` otherwise. |
 | `unread_count`, `unread_count_capped`, `task_number`, `thread_root_id`, `created_at`, `updated_at` | Bookkeeping. |
 
-An unknown or inaccessible ID exits `6` with a `not_found` error.
+An unknown, inaccessible, archived or dismissed ID exits `6` with a
+`not_found` error. `tasks list --mine` keeps only Tasks the caller owns or
+takes part in.
 
 ## Status
 
@@ -72,7 +79,7 @@ With `--json`, a failure prints exactly one line on stderr and nothing on
 stdout:
 
 ```json
-{"error":{"code":"auth_required","message":"Not authenticated. Run `nebula-ai login` first.","trace_id":"..."}}
+{"error":{"code":"not_found","message":"No Task thrd_... you can see.","trace_id":"..."}}
 ```
 
 Every failure except `usage` also carries `trace_id`, the W3C trace id the
@@ -80,15 +87,17 @@ command sent. Without `--json`, the same failures print a `Trace:` line.
 
 | `code` | Exit | Meaning |
 |---|---|---|
-| `error` | `1` | Any other failure before a result. |
+| `error` | `1` | Any other failure before a result, including a refusal. |
 | `usage` | `2` | A mistyped command, option, or argument, or an unknown or ambiguous `--workspace`. |
 | `auth_required` | `3` | Not signed in, or the saved session can no longer be used. |
+| `waiting` | `4` | The Task has an open question in front of the user. |
 | `outcome_unknown` | `5` | A message or other write was sent and possibly accepted, but its outcome is unknown. |
-| `not_found` | `6` | The thing the command named does not exist or is not visible to you. |
-| `timeout` | `7` | Nebula did not answer in time. |
+| `not_found` | `6` | The named Task, message, agent or job does not exist or is not visible. |
+| `timeout` | `7` | A read got no answer in 30 seconds. |
+| `personal_device_agent_consent` | `1` | An agent that runs on the user's computer needs their confirmation in the app to join a Channel. |
 
-Result statuses are not error codes. A chat or `tasks wait` that needs the
-user's decision exits `4` and prints its object on stdout with `status`
+Chat result statuses are not error codes. A chat or `tasks wait` that needs
+the user's decision exits `4` and prints its object on stdout with `status`
 `waiting` and `pending`; a failed turn exits `1` and prints the same object
 with `status` `failed`.
 
@@ -104,8 +113,8 @@ with `status` `failed`.
 | `tasks get <thread-id>` | object | See [Task](#task) |
 | `tasks create` | object | `ok`, `id` (the new Task), `message_id`; `id` is absent when the Task did not appear within 15 seconds, so find it with `tasks list` |
 | `tasks wait <thread-id>` | object | See [Chat](#chat) |
-| `messages list --task <thread-id>` | array, oldest first | `id`, `kind` (for example `root`, `agent_message`, `tool_call`, or `error`), `author_kind` (`user` or `agent`), `author_name`, `body`, `reply_count`, `shared_message_id`, `tool`, `created_at`; `kind`, `reply_count`, `shared_message_id`, and `tool` can be `null` |
-| `approvals list` | array | `id`, `task_id`, `task`, `agent`, `kind`, `title`, `summary`, `created_at` |
+| `messages list --task <thread-id>` | array, oldest first | `id`, `kind` (for example `root`, `agent_message`, `tool_call`, or `error`), `author_kind` (`user` or `agent`), `author_name`, `body`, `reply_count`, `shared_message_id`, `tool` (as in `events`, `null` off a `tool_call`), `created_at` |
+| `approvals list` | array, newest first | `id` (pass to `approve` or `deny`), `task_id`, `task` (its title), `agent`, `kind`, `title`, `summary`, `created_at` |
 
 Timestamps are Unix epoch milliseconds. Message listings omit approval
 requests; use `tasks get` or `approvals list` to detect them.
