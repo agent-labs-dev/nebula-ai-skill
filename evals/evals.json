@@ -5,7 +5,7 @@
     {
       "id": 1,
       "prompt": "Ask my Nebula inbox agent to summarize unread email from today.",
-      "expected_output": "Checks nebula-ai --version and nebula-ai --json status, lists agents, picks the matching agent by name, handle, or description, delegates with chat --agent, and reports final_message, the agent name, and the thread_id. Does not ask for approval, because the task is read-only."
+      "expected_output": "Checks nebula-ai --version and nebula-ai --json status, lists agents, picks the matching agent by name, handle, or description, starts a Task with tasks create -a <agent-handle>, polls tasks get on phase until it settles, reads the reply with messages list --task, and reports the reply, the agent name, and the thread_id. Does not delegate with chat --agent, and does not ask for approval, because the task is read-only."
     },
     {
       "id": 2,
@@ -25,7 +25,7 @@
     {
       "id": 5,
       "prompt": "Ask Nebula to create the Linear issues we discussed.",
-      "expected_output": "Gets approval for the write, delegates, and if the result status is waiting (exit 4), tells the user what pending asks and has them review it in Nebula. If the status is incomplete, checks tasks get instead of resending. Never approves on the user's behalf."
+      "expected_output": "Gets approval for the write, delegates, and if the result status is waiting (exit 4) or tasks get reports phase waiting, tells the user what is pending and has them review it in Nebula. If the status is incomplete, polls tasks get on phase instead of resending. Never approves on the user's behalf."
     },
     {
       "id": 6,
@@ -46,6 +46,36 @@
       "id": 9,
       "prompt": "Write a Python function that parses ISO 8601 dates.",
       "expected_output": "The skill does not trigger; the request has nothing to do with Nebula."
+    },
+    {
+      "id": 10,
+      "prompt": "Earlier you had my Nebula research agent summarize the uv changelog. Now have it compare three vector databases for our search feature.",
+      "expected_output": "Treats the comparison as new, unrelated work and starts a separate Task with tasks create -a <agent-handle>. Does not send it with chat --agent or chat --task into the earlier thread."
+    },
+    {
+      "id": 11,
+      "prompt": "Have Nebula add the action items to the uv changelog summary it just wrote.",
+      "expected_output": "Treats the request as a follow-up and sends it with chat --task using the retained thread_id. Does not start a new Task with tasks create."
+    },
+    {
+      "id": 12,
+      "prompt": "In Claude Code, ask my Nebula analytics agent for a full quarterly usage report; it usually takes 20 minutes.",
+      "expected_output": "Sends with tasks create (or runs chat in the background) and polls tasks get on phase until the Task settles. Does not request a foreground timeout longer than the 10 minute tool limit, and does not resend when a wait runs out."
+    },
+    {
+      "id": 13,
+      "prompt": "Check on the Nebula task you started. tasks get returns work_status idle and phase waiting.",
+      "expected_output": "Reads phase, reports that the Task waits on the user's decision, and has them review it in Nebula. Does not report the Task as finished because work_status is idle, and never approves on the user's behalf."
+    },
+    {
+      "id": 14,
+      "prompt": "Use Nebula to check my calendar. nebula-ai --version prints a version newer than the skill's cli-version.",
+      "expected_output": "Tells the user the skill is out of date and to run npx skills update nebula-ai, then continues. Does not upgrade or downgrade the CLI without approval."
+    },
+    {
+      "id": 15,
+      "prompt": "Ask my Nebula agent with handle data-bot to pull last week's signups.",
+      "expected_output": "Passes the handle to tasks create -a. Does not pass the agent's ID or display name to -a."
     }
   ]
 }
