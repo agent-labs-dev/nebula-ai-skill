@@ -4,6 +4,38 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the skill uses
 [Semantic Versioning](https://semver.org).
 
+## [0.8.0] - 2026-11-12
+
+Verified against nebula-ai CLI 0.1.41.
+
+### Changed
+
+- Exit codes now include `usage` (`2`), `not_found` (`6`), and `timeout`
+  (`7`). JSON failures other than `usage` carry a `trace_id`.
+- `--workspace` accepts a name as well as an ID or slug, and an unknown or
+  ambiguous value stops the command with a `usage` error instead of warning
+  and falling back.
+- `chat` can address the workspace's own `Nebula` agent in Home. `chat --new`
+  starts a fresh chat with an agent, and a Home chat returns no `events`.
+- `tasks wait` waits for a Task's newest turn and prints the same result and
+  exit codes as `chat`. `tasks create --agent` is required, and `tasks list
+  --mine` limits the list to Tasks you own or participate in.
+- `agents list` gained `--limit`, `--query`, and `--runnable`; agents expose
+  `device_id`.
+- Support multiple signed-in accounts with `account list`, `account switch`,
+  and `logout --all`; `workspace list` names each workspace's account.
+- Document `approvals list`, and never approve or deny an ask for the user.
+- Messages can be sent to a person with `messages send --to`.
+- Document Task `unread_count_capped`, message `tool`, and a workspace's
+  owning `account` in the JSON reference.
+- List the ACP editor server (`acp`) as out of scope.
+
+### Removed
+
+- The instruction not to choose the workspace's own Nebula agent for `chat`:
+  a chat with it now runs in Home rather than failing after sending.
+- The claim that an unknown `--workspace` only warns and falls back.
+
 ## [0.7.0] - 2026-11-04
 
 Verified against nebula-ai CLI 0.1.26.
