@@ -12,6 +12,7 @@ credentials.
 
 | Skill | nebula-ai CLI |
 |---|---|
+| 0.9.0 | 0.1.41 |
 | 0.8.0 | 0.1.33 |
 | 0.7.0 | 0.1.26 |
 | 0.6.0 | 0.1.20 |
@@ -54,7 +55,7 @@ metadata for clients that read it.
 The skill offers to install the CLI after asking. To install it yourself:
 
 ```sh
-npm install --global nebula-ai@0.1.33
+npm install --global nebula-ai@0.1.41
 nebula-ai login
 ```
 
@@ -62,9 +63,10 @@ nebula-ai login
 
 - Checks that the CLI is installed and signed in.
 - Lists workspaces, and agents with the services each one can use.
-- Delegates a task to a chosen agent in its own Task, waits for the result
-  without holding one long command open, and reports the result, the agent
-  that handled it, and the thread for follow-ups.
+- Talks to the workspace's own Nebula in Home, or delegates a task to a
+  chosen agent in its own Task, waits for the result without holding one long
+  command open, and reports the result, the agent that handled it, and the
+  thread for follow-ups.
 - Continues and inspects existing threads.
 
 Voice calls, computer use, scheduled jobs, Miniapps, skills, Channel

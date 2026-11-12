@@ -1,4 +1,4 @@
-# nebula-ai 0.1.33
+# nebula-ai 0.1.41
 
 ===== nebula-ai
 Usage: nebula-ai [options] [command]
@@ -6,52 +6,59 @@ Usage: nebula-ai [options] [command]
 CLI/TUI for the nebula.gg AI task orchestration platform
 
 Options:
-  -V, --version             output the version number
-  --api-url <url>           Override API URL
-  --json                    Output raw JSON
-  -v, --verbose             Verbose output (alias for --log-level=debug)
-  --log-level <level>       Log verbosity (error|warn|info|debug|trace)
-  --workspace <id-or-slug>  Workspace to use for this session (overrides stored
-                            preference)
-  --no-color                Disable colors
-  -h, --help                display help for command
+  -V, --version                  output the version number
+  --api-url <url>                Override API URL
+  --json                         Output raw JSON
+  -v, --verbose                  Verbose output (alias for --log-level=debug)
+  --log-level <level>            Log verbosity (error|warn|info|debug|trace)
+  --workspace <id-slug-or-name>  Workspace to use for this session (overrides
+                                 stored preference)
+  --no-color                     Disable colors
+  -h, --help                     display help for command
 
 Commands:
-  login                     Authenticate with nebula via the device-flow pairing
-  logout [options]          Sign out the current account (--all signs out every
-                            account)
-  account|accounts          Manage signed-in accounts
-  status                    Show CLI status overview
-  credits [options]         Show this workspace's credit balances and recent
-                            additions
-  chat [options] [message]  Send a message to an agent DM and print the reply
-  call                      Voice calls
-  open <link>               Resolve a nebula://open link (--json prints the
-                            entity)
-  channels                  View and work inside Channels
-  tasks                     Tasks: create them, follow them, and organise them
-  agents                    Agents: list, read, create and configure them
-  messages                  Messages: send, list, replies, threads, edit,
-                            delete, react and share
-  members                   The people in this workspace
-  inbox                     Your inbox: the threads addressed to you, and Done
-  approvals                 Actions agents are waiting on you to approve or deny
-  jobs                      Jobs: work that runs on a schedule
-  miniapps                  Miniapps: list, create and delete them
-  skills                    Skills: list, save and delete workspace and personal
-                            skills
-  local-device              Manage computer use and the local device daemon
-  install [options]         Set up computer use (alias of `local-device enable`)
-  uninstall [options]       Turn off computer use, stop the daemon, and remove
-                            this device
-  update [options]          Check for a newer CLI version and install it
-  completion <shell>        Generate a shell completion script (bash|zsh|fish)
-  capabilities              Probe and print this host's capability snapshot
-  logs                      Inspect Nebula log files on disk
-  workspace                 Manage workspaces
-  acp [options]             Run an Agent Client Protocol server over stdio, for
-                            an editor that speaks ACP
-  help [command]            display help for command
+  login                          Authenticate with nebula via the device-flow
+                                 pairing
+  logout [options]               Sign out the current account (--all signs out
+                                 every account)
+  account|accounts               Manage signed-in accounts
+  status                         Show CLI status overview
+  credits [options]              Show this workspace's credit balances and
+                                 recent additions
+  chat [options] [message]       Send a message to Home or an agent and print
+                                 the reply
+  call                           Voice calls
+  open <link>                    Resolve a nebula://open link (--json prints the
+                                 entity)
+  channels                       View and work inside Channels
+  tasks                          Tasks: create them, follow them, and organise
+                                 them
+  agents                         Agents: list, read, create and configure them
+  messages                       Messages: send, list, replies, threads, edit,
+                                 delete, react and share
+  members                        The people in this workspace
+  inbox                          Your inbox: the threads addressed to you, and
+                                 Done
+  approvals                      Actions agents are waiting on you to approve or
+                                 deny
+  jobs                           Jobs: work that runs on a schedule
+  miniapps                       Miniapps: list, create and delete them
+  skills                         Skills: list, save and delete workspace and
+                                 personal skills
+  local-device                   Manage computer use and the local device daemon
+  install [options]              Set up computer use (alias of `local-device
+                                 enable`)
+  uninstall [options]            Turn off computer use, stop the daemon, and
+                                 remove this device
+  update [options]               Check for a newer CLI version and install it
+  completion <shell>             Generate a shell completion script
+                                 (bash|zsh|fish)
+  capabilities                   Probe and print this host's capability snapshot
+  logs                           Inspect Nebula log files on disk
+  workspace                      Manage workspaces
+  acp [options]                  Run an Agent Client Protocol server over stdio,
+                                 for an editor that speaks ACP
+  help [command]                 display help for command
 
 ===== nebula-ai login
 Usage: nebula-ai login [options]
@@ -119,7 +126,7 @@ Options:
 ===== nebula-ai chat
 Usage: nebula-ai chat [options] [message]
 
-Send a message to an agent DM and print the reply
+Send a message to Home or an agent and print the reply
 
 Arguments:
   message                 Message to send (omit when using --resume)
@@ -1144,19 +1151,22 @@ Usage: nebula-ai jobs [options] [command]
 Jobs: work that runs on a schedule
 
 Options:
-  -h, --help              display help for command
+  -h, --help                display help for command
 
 Commands:
-  list [options]          List the jobs you can see
-  get <job>               Show a job
-  create [options]        Create a scheduled job, as a draft its agent finishes
-  update [options] <job>  Change a job's name, description, schedule or agent
-  webhook <job>           Show a webhook job's URL and signing secret
-  run <job>               Run a job now
-  pause <job>             Pause a job
-  resume <job>            Resume a paused job
-  delete <job>            Delete a job
-  help [command]          display help for command
+  list [options]            List the jobs you can see
+  get <job>                 Show a job
+  create [options]          Create a scheduled job, as a draft its agent
+                            finishes
+  update [options] <job>    Change a job's name, description, schedule or agent
+  webhook [options] <job>   Show a webhook job's URL and signing secret
+  create-webhook [options]  Create a job that runs when a service posts to its
+                            URL, as a draft its agent finishes
+  run <job>                 Run a job now
+  pause <job>               Pause a job
+  resume <job>              Resume a paused job
+  delete <job>              Delete a job
+  help [command]            display help for command
 
 ===== nebula-ai jobs list
 Usage: nebula-ai jobs list [options]
@@ -1217,7 +1227,20 @@ Arguments:
   job         Job ID or slug
 
 Options:
+  --rotate    Replace the secret first; senders using the old one are refused
   -h, --help  display help for command
+
+===== nebula-ai jobs create-webhook
+Usage: nebula-ai jobs create-webhook [options]
+
+Create a job that runs when a service posts to its URL, as a draft its agent
+finishes
+
+Options:
+  -n, --name <name>         Job name
+  -d, --description <text>  What the job does
+  -a, --agent <agent>       The agent that runs it (ID or handle)
+  -h, --help                display help for command
 
 ===== nebula-ai jobs run
 Usage: nebula-ai jobs run [options] <job>

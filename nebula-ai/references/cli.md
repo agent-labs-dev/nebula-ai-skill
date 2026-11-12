@@ -1,12 +1,12 @@
 # nebula-ai CLI reference
 
-Commands relevant to delegation in nebula-ai 0.1.33. For anything else, read
+Commands relevant to delegation in nebula-ai 0.1.41. For anything else, read
 the command's `--help` output before running it.
 
 ## Install and sign in
 
 ```sh
-npm install --global nebula-ai@0.1.33
+npm install --global nebula-ai@0.1.41
 nebula-ai --version
 nebula-ai login
 nebula-ai status
@@ -16,6 +16,9 @@ nebula-ai logout
 `login` uses device pairing: the user opens a URL, confirms a code in the
 browser, and the CLI stores the session in its own credential store. Never
 collect authentication material in chat or save it in a project.
+
+`logout` signs out the current account. `nebula-ai logout --all` signs out
+every account on the backend. Both change the user's machine; ask first.
 
 `nebula-ai update --check` reports whether a newer CLI exists without
 installing it. Upgrading changes the user's machine and may move the CLI past
@@ -29,18 +32,26 @@ Place global options before the command.
 |---|---|
 | `--json` | Machine-readable output where supported. See [json-output.md](json-output.md). |
 | `--no-color` | Disable ANSI colors. |
-| `--workspace <id-or-slug>` | Use this workspace for this command only. An unknown value is refused with a `usage` error (exit `2`). |
+| `--workspace <id-slug-or-name>` | Use this workspace for one command. An unknown or ambiguous value stops the command with a `usage` error (exit `2`) listing the account's workspaces, before anything is read or written, and does not change the saved default. |
 | `--log-level <level>` | `error`, `warn`, `info`, `debug`, or `trace`, written to stderr. |
 
-## Workspaces
+## Workspaces and accounts
 
 ```sh
 nebula-ai --json workspace list
 nebula-ai workspace switch <id-or-slug>
+nebula-ai --json account list
+nebula-ai account switch <email-or-user-id>
 ```
 
-`workspace switch` changes the saved default for every later command. Ask
-before switching.
+`workspace list` includes every signed-in account's workspaces; an entry may
+also carry an `account`. `workspace switch` takes an ID or slug and changes the
+saved default for every later command; ask before switching. An unknown
+workspace is a `usage` error, not a fallback.
+
+`account switch` chooses the account used for account-level commands and for
+creating a workspace. Ask before switching accounts. The current account's
+workspaces remain available through `workspace list`.
 
 ## Agents
 
@@ -63,7 +74,11 @@ How each command finds an agent:
 |---|---|---|
 | `agents get` | ID or handle | Every agent |
 | `tasks create -a` | Handle only; an ID or name is refused | The Channel's roster |
-| `chat --agent` | ID, handle, or case-insensitive name | Every agent you can read; a Channel lead such as `nebula` is refused before sending |
+| `chat --agent` | ID, handle, or case-insensitive name | Every agent you can read; another Channel lead is refused before sending |
+
+The workspace's own `Nebula` agent is the Home assistant. Naming it sends
+`chat` to Home rather than to an agent DM; it runs no Task. Use it only when
+the user wants to talk to Nebula itself.
 
 Without `--agent`, chat uses the first enabled, non-system agent.
 
@@ -76,13 +91,14 @@ connect it in Nebula.
 
 ```sh
 nebula-ai --json --no-color chat --no-stream --task "<thread-id>" -- "<follow-up>"
+nebula-ai --json --no-color chat --no-stream --new --agent "<agent>" -- "<task>"
 nebula-ai --json --no-color chat --no-stream --agent "<agent>" --context "docs/*.md" -- "<task>"
 ```
 
 | Option | Effect |
 |---|---|
-| `-a, --agent <agent>` | Send to this agent's direct-message thread: an ID, handle, or name. Every request sent this way shares one thread and keeps its first title, so start unrelated work with `tasks create`. |
-| `--new` | With `--agent`, start a new private thread with the agent instead of its direct-message thread. Cannot be combined with `--task`. |
+| `-a, --agent <agent>` | Send to this agent's direct-message thread, or to Home for the workspace's own Nebula: an ID, handle, or name. Every request sent to an agent this way shares one thread and keeps its first title, so start unrelated work with `tasks create`. |
+| `--new` | With `--agent`, start a new private thread with the agent instead of its direct-message thread. Cannot be combined with `--task`; a `usage` error for the Home Nebula. |
 | `-t, --task <thread-id>` | Send to an existing thread. Takes precedence over `--agent`. |
 | `--context <glob>` | Upload matching files with the message. Repeatable. Quote the glob. At most 50 files and 512 KiB in total; a glob that matches nothing is an error. |
 | `--no-stream` | Wait, for up to 15 minutes, and print one result. Always use it for automation; run it in the background when your tool calls are capped below 15 minutes. |
@@ -145,7 +161,7 @@ behalf.
 |---|---|---|
 | CLI missing | The shell reports `command not found` (exit `127`) | Ask, then install the verified version. |
 | Not signed in | Exit `3`; `status` prints `auth.logged_in` false, other commands print an `auth_required` error | Run `nebula-ai login` and wait for the user. |
-| Unknown command, option or workspace | Exit `2`, `usage` error | Check `--help`; the installed CLI may differ from 0.1.33. |
+| Unknown command, option, or unknown or ambiguous `--workspace` | Exit `2`, `usage` error; nothing read or written | Check `--help`, or fix the workspace without substituting another; the installed CLI may differ from 0.1.41. |
 | Task, message or `agents get` target not found | Exit `6`, `not_found` error, nothing sent | Re-list agents or Tasks; do not substitute another. |
 | `chat --agent` names no agent | Exit `1`, `error`, nothing sent | Re-list agents; do not substitute another. |
 | Run failed | Exit `1`, JSON printed with `status` `failed` | Report it once. |
@@ -163,4 +179,6 @@ absent on a `usage` error. `code` and exit are `error` (`1`), `usage` (`2`),
 with an open question), `outcome_unknown` (`5`), `not_found` (`6`),
 `timeout` (`7`), or `personal_device_agent_consent` (`1`: an agent that runs
 on the user's computer joins a Channel only with their confirmation in the
-app). Without `--json`, errors are plain text followed by a `Trace:` line.
+app). A `waiting` or `failed` chat or `tasks wait` result is not an error
+line: it prints its object on stdout. Without `--json`, errors are plain text
+followed by a `Trace:` line.

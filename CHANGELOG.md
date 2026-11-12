@@ -4,6 +4,26 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the skill uses
 [Semantic Versioning](https://semver.org).
 
+## [0.9.0] - 2026-11-12
+
+Verified against nebula-ai CLI 0.1.41.
+
+### Changed
+
+- `--workspace` accepts a workspace name as well as an ID or slug; an unknown
+  or ambiguous value stops the command with a `usage` error.
+- `chat` addresses the workspace's own `Nebula` agent in Home instead of
+  refusing it. A Home chat returns no `events`, and `--new` is a `usage` error
+  there.
+- Document multiple signed-in accounts (`account list`, `account switch`,
+  `logout --all`).
+- Separate chat result statuses from error codes in the JSON reference.
+- List the ACP editor server (`acp`) as out of scope.
+
+### Removed
+
+- The instruction not to choose the workspace's own Nebula agent for `chat`.
+
 ## [0.8.0] - 2026-11-06
 
 Verified against nebula-ai CLI 0.1.33.
