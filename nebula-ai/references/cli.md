@@ -39,15 +39,15 @@ Place global options before the command.
 
 ```sh
 nebula-ai --json workspace list
-nebula-ai workspace switch <id-slug-or-name>
+nebula-ai workspace switch <id-or-slug>
 nebula-ai --json account list
 nebula-ai account switch <email-or-user-id>
 ```
 
 `workspace list` includes every signed-in account's workspaces; an entry may
-also carry an `account`. `workspace switch` changes the saved default for
-every later command; ask before switching. An unknown workspace is a `usage`
-error, not a fallback.
+also carry an `account`. `workspace switch` takes an ID or slug and changes the
+saved default for every later command; ask before switching. An unknown
+workspace is a `usage` error, not a fallback.
 
 `account switch` chooses the account used for account-level commands and for
 creating a workspace. Ask before switching accounts. The current account's
@@ -159,7 +159,8 @@ answered in Nebula.
 
 With `--json`, each failure prints exactly one line on stderr,
 `{"error":{"code":"...","message":"...","trace_id":"..."}}`. `code` is
-`error`, `usage` (exit `2`), `auth_required` (exit `3`), `waiting` (exit `4`),
-`outcome_unknown` (exit `5`), `not_found` (exit `6`), or `timeout` (exit `7`).
-`usage` errors omit `trace_id`; every other failure includes it. Without
+`error`, `usage` (exit `2`), `auth_required` (exit `3`), `outcome_unknown`
+(exit `5`), `not_found` (exit `6`), or `timeout` (exit `7`). `usage` errors omit
+`trace_id`; every other failure includes it. Exit `4` is not an error line: a
+`waiting` chat or `tasks wait` result prints its object on stdout. Without
 `--json`, errors are plain text, with a `Trace:` line for the same failures.
