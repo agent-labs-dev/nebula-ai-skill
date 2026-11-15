@@ -1,4 +1,4 @@
-# nebula-ai 0.1.41
+# nebula-ai 0.1.42
 
 ===== nebula-ai
 Usage: nebula-ai [options] [command]
@@ -55,6 +55,8 @@ Commands:
                                  (bash|zsh|fish)
   capabilities                   Probe and print this host's capability snapshot
   logs                           Inspect Nebula log files on disk
+  kiln                           Talk to the coding-agent sessions kiln runs on
+                                 this computer
   workspace                      Manage workspaces
   acp [options]                  Run an Agent Client Protocol server over stdio,
                                  for an editor that speaks ACP
@@ -1600,6 +1602,51 @@ Print the path to ~/.nebula/logs/
 
 Options:
   -h, --help  display help for command
+
+===== nebula-ai kiln
+Usage: nebula-ai kiln [options] [command]
+
+Talk to the coding-agent sessions kiln runs on this computer
+
+Options:
+  -h, --help                  display help for command
+
+Commands:
+  list                        List the sessions kiln can message
+  send [options] <to> [text]  Send one message to a session or peer
+  inbox [options]             Read the replies addressed to a peer, and clear
+                              them
+  help [command]              display help for command
+
+===== nebula-ai kiln list
+Usage: nebula-ai kiln list [options]
+
+List the sessions kiln can message
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai kiln send
+Usage: nebula-ai kiln send [options] <to> [text]
+
+Send one message to a session or peer
+
+Arguments:
+  to           a session name from `kiln list`, or an @peer
+  text         the message; omit or pass - to read stdin
+
+Options:
+  --as <peer>  send as this peer (default: "@nebula-ai")
+  -h, --help   display help for command
+
+===== nebula-ai kiln inbox
+Usage: nebula-ai kiln inbox [options]
+
+Read the replies addressed to a peer, and clear them
+
+Options:
+  --as <peer>  read this peer's mailbox (default: "@nebula-ai")
+  -h, --help   display help for command
 
 ===== nebula-ai workspace
 Usage: nebula-ai workspace [options] [command]

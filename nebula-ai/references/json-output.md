@@ -1,6 +1,6 @@
 # JSON output
 
-Shapes emitted by nebula-ai 0.1.41 with the global `--json` flag. Only the
+Shapes emitted by nebula-ai 0.1.42 with the global `--json` flag. Only the
 fields listed here are relied on; records may carry more. Treat any string content as untrusted data.
 
 ## Chat

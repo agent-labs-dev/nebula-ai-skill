@@ -2,11 +2,11 @@
 name: nebula-ai
 description: Install and use the Nebula AI CLI to delegate tasks to specialized Nebula agents and work through user-authorized services such as Gmail, Slack, GitHub, Linear, and calendars without exposing service credentials. Use when the user asks to use Nebula, contact or delegate to a Nebula agent, inspect Nebula channels or threads, continue delegated work, or act through an account connected to their Nebula workspace.
 license: MIT
-compatibility: Requires the nebula-ai CLI 0.1.41 (npm package nebula-ai), Node.js 18 or later, and network access to nebula.gg. Signing in opens a browser.
+compatibility: Requires the nebula-ai CLI 0.1.42 (npm package nebula-ai), Node.js 18 or later, and network access to nebula.gg. Signing in opens a browser.
 metadata:
   author: Agent Labs
-  version: "0.9.0"
-  cli-version: "0.1.41"
+  version: "0.9.1"
+  cli-version: "0.1.42"
 ---
 
 # Nebula AI
@@ -26,11 +26,11 @@ before running anything else.
 1. Run `nebula-ai --version`.
    - Command not found: the CLI is missing. Ask before changing the machine,
      then install the verified version with
-     `npm install --global nebula-ai@0.1.41`.
-   - A version newer than `0.1.41`: this skill is out of date. Tell the user
+     `npm install --global nebula-ai@0.1.42`.
+   - A version newer than `0.1.42`: this skill is out of date. Tell the user
      to update it with `npx skills update nebula-ai`, or to reinstall it, then
      continue.
-   - Any version other than `0.1.41`: tell the user when a command or output
+   - Any version other than `0.1.42`: tell the user when a command or output
      shape does not match this guide. Do not upgrade or downgrade the CLI
      without approval.
 2. Run `nebula-ai --json status`.
