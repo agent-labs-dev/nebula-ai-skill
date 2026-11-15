@@ -4,6 +4,14 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the skill uses
 [Semantic Versioning](https://semver.org).
 
+## [0.9.1] - 2026-11-15
+
+Verified against nebula-ai CLI 0.1.42.
+
+### Changed
+
+- Update the supported CLI version and generated command surface to 0.1.42.
+
 ## [0.9.0] - 2026-11-12
 
 Verified against nebula-ai CLI 0.1.41.

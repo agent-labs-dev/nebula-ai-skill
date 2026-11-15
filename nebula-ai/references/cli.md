@@ -1,12 +1,12 @@
 # nebula-ai CLI reference
 
-Commands relevant to delegation in nebula-ai 0.1.41. For anything else, read
+Commands relevant to delegation in nebula-ai 0.1.42. For anything else, read
 the command's `--help` output before running it.
 
 ## Install and sign in
 
 ```sh
-npm install --global nebula-ai@0.1.41
+npm install --global nebula-ai@0.1.42
 nebula-ai --version
 nebula-ai login
 nebula-ai status
@@ -161,7 +161,7 @@ behalf.
 |---|---|---|
 | CLI missing | The shell reports `command not found` (exit `127`) | Ask, then install the verified version. |
 | Not signed in | Exit `3`; `status` prints `auth.logged_in` false, other commands print an `auth_required` error | Run `nebula-ai login` and wait for the user. |
-| Unknown command, option, or unknown or ambiguous `--workspace` | Exit `2`, `usage` error; nothing read or written | Check `--help`, or fix the workspace without substituting another; the installed CLI may differ from 0.1.41. |
+| Unknown command, option, or unknown or ambiguous `--workspace` | Exit `2`, `usage` error; nothing read or written | Check `--help`, or fix the workspace without substituting another; the installed CLI may differ from 0.1.42. |
 | Task, message or `agents get` target not found | Exit `6`, `not_found` error, nothing sent | Re-list agents or Tasks; do not substitute another. |
 | `chat --agent` names no agent | Exit `1`, `error`, nothing sent | Re-list agents; do not substitute another. |
 | Run failed | Exit `1`, JSON printed with `status` `failed` | Report it once. |
