@@ -32,8 +32,10 @@ validator uses uv to check the skill format.
 
 ## Updating the supported CLI version
 
-CI fails when npm publishes a newer `nebula-ai` than the one in
-`nebula-ai/cli-version`, and a scheduled workflow opens an issue. To update:
+When npm publishes a newer `nebula-ai` than the one in
+`nebula-ai/cli-version`, a scheduled workflow keeps one open issue for it and
+closes the ones it supersedes. CI then fails pull requests that change
+`nebula-ai/` and warns on the rest. To update:
 
 1. Write the new version to `nebula-ai/cli-version`.
 2. Run `tools/snapshot-cli.sh` to regenerate `tests/cli-surface.txt`, and read
@@ -48,7 +50,7 @@ CI fails when npm publishes a newer `nebula-ai` than the one in
 
 - Write instructions as direct, imperative steps an agent can follow.
 - Describe only released, publicly documented CLI behavior.
-- Use placeholders such as `<agent-slug>` and `<thread-id>`, never real IDs,
+- Use placeholders such as `<agent-handle>` and `<thread-id>`, never real IDs,
   accounts, or email addresses.
 - Call the CLI directly. If a task needs a helper script, fix the CLI instead.
 

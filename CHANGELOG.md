@@ -4,6 +4,91 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the skill uses
 [Semantic Versioning](https://semver.org).
 
+## [0.9.1] - 2026-11-15
+
+Verified against nebula-ai CLI 0.1.42.
+
+### Changed
+
+- Update the supported CLI version and generated command surface to 0.1.42.
+
+## [0.9.0] - 2026-11-12
+
+Verified against nebula-ai CLI 0.1.41.
+
+### Changed
+
+- `--workspace` accepts a workspace name as well as an ID or slug; an unknown
+  or ambiguous value stops the command with a `usage` error.
+- `chat` addresses the workspace's own `Nebula` agent in Home instead of
+  refusing it. A Home chat returns no `events`, and `--new` is a `usage` error
+  there.
+- Document multiple signed-in accounts (`account list`, `account switch`,
+  `logout --all`).
+- Separate chat result statuses from error codes in the JSON reference.
+- List the ACP editor server (`acp`) as out of scope.
+
+### Removed
+
+- The instruction not to choose the workspace's own Nebula agent for `chat`.
+
+## [0.8.0] - 2026-11-06
+
+Verified against nebula-ai CLI 0.1.33.
+
+### Changed
+
+- Start new work with `tasks create -a <agent-handle>` instead of
+  `chat --agent`, which piles every request into one direct-message thread.
+  Keep `chat --task` for follow-ups. `-a` takes a handle only.
+- Wait for a delegated Task by polling `tasks get` and reading
+  `messages list --task`, instead of holding `chat --no-stream` open for up
+  to 15 minutes. Run a blocking `chat` in the background when tool calls are
+  capped below 15 minutes.
+- Branch on a Task's `phase`, not `work_status`, which counts only live runs
+  and can read `idle` while a question or approval is still open.
+- Tell the user to run `npx skills update nebula-ai` when the installed CLI is
+  newer than the skill.
+- Project `agents list` with `jq` so large workspaces fit in a tool call,
+  or narrow it with `--query`.
+- List a waiting Task's asks with `approvals list` and relay them; run
+  `approvals approve` or `deny` only on the user's explicit decision.
+- Offer `tasks wait` as the blocking form of waiting on a Task.
+- Find a lost Task with `tasks list --mine`; without it the list includes
+  other members' Tasks.
+- Attach files to new work with `chat --new --agent`, which opens a fresh
+  thread instead of the agent's direct-message thread.
+- Document the 0.1.33 exit codes and error codes: `usage` (2), `not_found`
+  (6), `timeout` (7), `waiting` (4), `personal_device_agent_consent`, and
+  the `trace_id` on errors.
+- An unknown `--workspace` is now refused, `--channel` takes a Channel ID,
+  and `chat` refuses the workspace's own Nebula agent before sending.
+- Point a sync failure at `NEBULA_ZERO_CACHE_URL`; the CLI no longer reads
+  `ZERO_CACHE_URL`.
+
+## [0.7.0] - 2026-11-04
+
+Verified against nebula-ai CLI 0.1.26.
+
+### Changed
+
+- Choose agents by `handle`; `agents list` no longer prints `slug`.
+- Check a Task's work status with `tasks get`, which replaces `tasks status`.
+- Read a Task's messages with `messages list --task`, which replaces
+  `tasks messages`.
+- `tasks create` takes the task text and starts the work, instead of creating
+  an empty titled thread.
+- Check that an agent's `toolkits` cover the service a task needs. The CLI no
+  longer lists connected accounts.
+- Document the 0.1.26 JSON shapes for agents, Tasks, messages and writes.
+- Do not choose the workspace's own `Nebula` agent for `chat`: it runs no Task,
+  so the chat fails after the message is sent.
+
+### Removed
+
+- Instructions for `agents accounts`, `integrations` and `usage`, which the
+  CLI no longer has.
+
 ## [0.6.0] - 2026-10-09
 
 Verified against nebula-ai CLI 0.1.20.

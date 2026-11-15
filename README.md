@@ -12,6 +12,10 @@ credentials.
 
 | Skill | nebula-ai CLI |
 |---|---|
+| 0.9.1 | 0.1.42 |
+| 0.9.0 | 0.1.41 |
+| 0.8.0 | 0.1.33 |
+| 0.7.0 | 0.1.26 |
 | 0.6.0 | 0.1.20 |
 | 0.4.0 | 0.1.10 |
 | 0.3.0 | 0.1.10 |
@@ -19,7 +23,7 @@ credentials.
 
 The supported CLI version is recorded in [`nebula-ai/cli-version`](nebula-ai/cli-version).
 CI checks every documented command against that version's help output and
-fails when a newer CLI is published. Contributors update the skill using
+flags a newer published CLI. Contributors update the skill using
 the steps in CONTRIBUTING.md. See [CHANGELOG.md](CHANGELOG.md) for history.
 
 ## Install
@@ -30,6 +34,15 @@ npx skills add agent-labs-dev/nebula-ai-skill
 
 Or copy the `nebula-ai/` directory into the skills directory of any client
 that supports the Agent Skills format.
+
+An installed skill does not update itself. To get the latest version:
+
+```sh
+npx skills update nebula-ai
+```
+
+The skill tells the user to run this when the installed CLI is newer than the
+version it was verified against.
 
 The skill follows the open `SKILL.md` format and has no dependency on a
 particular model or agent host. `agents/openai.yaml` is optional presentation
@@ -43,19 +56,21 @@ metadata for clients that read it.
 The skill offers to install the CLI after asking. To install it yourself:
 
 ```sh
-npm install --global nebula-ai@0.1.20
+npm install --global nebula-ai@0.1.42
 nebula-ai login
 ```
 
 ## What the skill does
 
 - Checks that the CLI is installed and signed in.
-- Lists workspaces, agents, and the accounts each agent can act as.
-- Delegates a task to a chosen agent and reports the result, the agent that
-  handled it, and the thread for follow-ups.
+- Lists workspaces, and agents with the services each one can use.
+- Talks to the workspace's own Nebula in Home, or delegates a task to a
+  chosen agent in its own Task, waits for the result without holding one long
+  command open, and reports the result, the agent that handled it, and the
+  thread for follow-ups.
 - Continues and inspects existing threads.
 
-Voice calls, computer use, billing, user variables, profile changes, model
+Voice calls, computer use, scheduled jobs, Miniapps, skills, Channel
 administration, and agent creation or editing require a separate request
 and approval.
 
