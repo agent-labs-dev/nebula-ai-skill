@@ -9,7 +9,7 @@ if ! command -v shellcheck >/dev/null 2>&1; then
   exit 0
 fi
 if [ "${1:-}" = "--changed" ]; then
-  git diff --name-only --diff-filter=d origin/main -- '*.sh' | xargs -r shellcheck
+  git diff --name-only --diff-filter=d origin/main -- '*.sh' tools/gate | xargs -r shellcheck
 else
-  git ls-files -z '*.sh' | xargs -0 -r shellcheck
+  { git ls-files -z '*.sh'; printf 'tools/gate\0'; } | xargs -0 -r shellcheck
 fi
