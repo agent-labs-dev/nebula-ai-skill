@@ -1,0 +1,15 @@
+#!/bin/sh
+# Fast local check: documented commands against the pinned CLI snapshot, then shellcheck.
+# `tools/gate --changed` shellchecks only the shell scripts changed against origin/main.
+set -eu
+cd "$(dirname "$0")/.."
+python3 tools/check_skill.py
+if ! command -v shellcheck >/dev/null 2>&1; then
+  echo "tools/gate: shellcheck not installed, skipping shell script checks" >&2
+  exit 0
+fi
+if [ "${1:-}" = "--changed" ]; then
+  git diff --name-only --diff-filter=d origin/main -- '*.sh' | xargs -r shellcheck
+else
+  git ls-files -z '*.sh' | xargs -0 -r shellcheck
+fi
