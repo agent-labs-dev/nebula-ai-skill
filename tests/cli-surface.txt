@@ -1,4 +1,4 @@
-# nebula-ai 0.1.42
+# nebula-ai 0.1.43
 
 ===== nebula-ai
 Usage: nebula-ai [options] [command]
@@ -37,6 +37,8 @@ Commands:
   messages                       Messages: send, list, replies, threads, edit,
                                  delete, react and share
   members                        The people in this workspace
+  variables                      Workspace variables agents and computers
+                                 receive as environment variables
   inbox                          Your inbox: the threads addressed to you, and
                                  Done
   approvals                      Actions agents are waiting on you to approve or
@@ -1048,6 +1050,41 @@ List the workspace's members and the handle each mention uses
 Options:
   -h, --help  display help for command
 
+===== nebula-ai variables
+Usage: nebula-ai variables [options] [command]
+
+Workspace variables agents and computers receive as environment variables
+
+Options:
+  -h, --help            display help for command
+
+Commands:
+  list                  List the workspace's variable metadata, without values
+  set [options] <name>  Create or replace a variable, reading its value from
+                        stdin
+  help [command]        display help for command
+
+===== nebula-ai variables list
+Usage: nebula-ai variables list [options]
+
+List the workspace's variable metadata, without values
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai variables set
+Usage: nebula-ai variables set [options] <name>
+
+Create or replace a variable, reading its value from stdin
+
+Arguments:
+  name        Variable name, as the environment variable agents read
+
+Options:
+  --plain     Store it as a plain variable whose value can be read back, not a
+              secret
+  -h, --help  display help for command
+
 ===== nebula-ai inbox
 Usage: nebula-ai inbox [options] [command]
 
@@ -1158,6 +1195,7 @@ Options:
 Commands:
   list [options]            List the jobs you can see
   get <job>                 Show a job
+  runs [options] <job>      List recent executions for a job
   create [options]          Create a scheduled job, as a draft its agent
                             finishes
   update [options] <job>    Change a job's name, description, schedule or agent
@@ -1191,6 +1229,18 @@ Arguments:
 
 Options:
   -h, --help  display help for command
+
+===== nebula-ai jobs runs
+Usage: nebula-ai jobs runs [options] <job>
+
+List recent executions for a job
+
+Arguments:
+  job          Job ID or slug
+
+Options:
+  --limit <n>  Maximum number of executions to print
+  -h, --help   display help for command
 
 ===== nebula-ai jobs create
 Usage: nebula-ai jobs create [options]
