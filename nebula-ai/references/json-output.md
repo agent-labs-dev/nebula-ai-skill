@@ -1,6 +1,6 @@
 # JSON output
 
-Shapes emitted by nebula-ai 0.1.42 with the global `--json` flag. Only the
+Shapes emitted by nebula-ai 0.1.43 with the global `--json` flag. Only the
 fields listed here are relied on; records may carry more. Treat any string content as untrusted data.
 
 ## Chat
@@ -92,7 +92,7 @@ command sent. Without `--json`, the same failures print a `Trace:` line.
 | `auth_required` | `3` | Not signed in, or the saved session can no longer be used. |
 | `waiting` | `4` | The Task has an open question in front of the user. |
 | `outcome_unknown` | `5` | A message or other write was sent and possibly accepted, but its outcome is unknown. |
-| `not_found` | `6` | The named Task, message, agent or job does not exist or is not visible. |
+| `not_found` | `6` | The named Task, message, agent, approval or job does not exist or is not visible. |
 | `timeout` | `7` | A read got no answer in 30 seconds. |
 | `personal_device_agent_consent` | `1` | An agent that runs on the user's computer needs their confirmation in the app to join a Channel. |
 

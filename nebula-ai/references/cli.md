@@ -1,12 +1,12 @@
 # nebula-ai CLI reference
 
-Commands relevant to delegation in nebula-ai 0.1.42. For anything else, read
+Commands relevant to delegation in nebula-ai 0.1.43. For anything else, read
 the command's `--help` output before running it.
 
 ## Install and sign in
 
 ```sh
-npm install --global nebula-ai@0.1.42
+npm install --global nebula-ai@0.1.43
 nebula-ai --version
 nebula-ai login
 nebula-ai status
@@ -161,9 +161,8 @@ behalf.
 |---|---|---|
 | CLI missing | The shell reports `command not found` (exit `127`) | Ask, then install the verified version. |
 | Not signed in | Exit `3`; `status` prints `auth.logged_in` false, other commands print an `auth_required` error | Run `nebula-ai login` and wait for the user. |
-| Unknown command, option, or unknown or ambiguous `--workspace` | Exit `2`, `usage` error; nothing read or written | Check `--help`, or fix the workspace without substituting another; the installed CLI may differ from 0.1.42. |
-| Task, message or `agents get` target not found | Exit `6`, `not_found` error, nothing sent | Re-list agents or Tasks; do not substitute another. |
-| `chat --agent` names no agent | Exit `1`, `error`, nothing sent | Re-list agents; do not substitute another. |
+| Unknown command, option, or unknown or ambiguous `--workspace` | Exit `2`, `usage` error; nothing read or written | Check `--help`, or fix the workspace without substituting another; the installed CLI may differ from 0.1.43. |
+| Task, message, approval, `agents get` target or `chat --agent` agent not found | Exit `6`, `not_found` error, nothing sent | Re-list agents, Tasks or approvals; do not substitute another. |
 | Run failed | Exit `1`, JSON printed with `status` `failed` | Report it once. |
 | Run waiting for the user | Exit `4`, JSON printed with `status` `waiting` and `pending` | See the result handling in SKILL.md. |
 | `chat` or `tasks wait` waited 15 minutes or was interrupted | Exit `5`, JSON printed with `status` `incomplete` | Poll `tasks get` on `phase`; do not resend. |
