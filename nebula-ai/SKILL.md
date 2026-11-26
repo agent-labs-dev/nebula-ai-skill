@@ -98,6 +98,8 @@ before running anything else.
    user before adding it to one with `channels add-agent`.
    The command returns once the message is sent and prints the Task's `id`: keep it as the
    `thread_id`, then follow [Wait for the result](#wait-for-the-result).
+   When it prints only a `message_id`, the Task has not appeared yet: find
+   its `id` with `tasks list --mine`.
    Any other outcome, including an exit `1` error, can come after the
    message was posted: before sending again, which could repeat a write,
    look for the Task with `tasks list --mine` and confirm it with
@@ -218,9 +220,9 @@ the `id` that `tasks create` prints.
 
 - Read what happened in a thread with
   `nebula-ai --json messages list --task <thread-id> --limit 50`.
-- Every `chat --agent <agent-handle>` without `--task` starts a new private
-  thread with that agent, so never use it for a follow-up. Without `--agent`
-  or `--task`, `chat` posts to Nebula in Home.
+- Without `--task`, `chat --agent <agent-handle>` starts a new private thread
+  with any agent other than Nebula, so never use it for a follow-up. Without
+  `--agent` or `--task`, `chat` posts to Nebula in Home.
 - If the `thread_id` was lost, find the thread with
   `nebula-ai --json tasks list --mine --limit 20`, raising `--limit` (for
   example to `100`) when it is not there, and confirm it with
