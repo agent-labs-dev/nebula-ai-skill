@@ -4,6 +4,18 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the skill uses
 [Semantic Versioning](https://semver.org).
 
+## [0.9.3] - 2026-11-26
+
+Verified against nebula-ai CLI 0.1.46.
+
+### Changed
+
+- Update the supported CLI version and generated command surface to 0.1.46.
+- `chat --agent` starts a new private thread with the agent, and `chat` without
+  `--agent` or `--task` posts to Home. The `--new` option is gone.
+- List the MCP server (`mcp`) as out of scope unless the user asks.
+- Document the `follow_up` field of an unfinished chat result.
+
 ## [0.9.2] - 2026-11-19
 
 Verified against nebula-ai CLI 0.1.43.

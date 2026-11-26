@@ -2,11 +2,11 @@
 name: nebula-ai
 description: Install and use the Nebula AI CLI to delegate tasks to specialized Nebula agents and work through user-authorized services such as Gmail, Slack, GitHub, Linear, and calendars without exposing service credentials. Use when the user asks to use Nebula, contact or delegate to a Nebula agent, inspect Nebula channels or threads, continue delegated work, or act through an account connected to their Nebula workspace.
 license: MIT
-compatibility: Requires the nebula-ai CLI 0.1.43 (npm package nebula-ai), Node.js 18 or later, and network access to nebula.gg. Signing in opens a browser.
+compatibility: Requires the nebula-ai CLI 0.1.46 (npm package nebula-ai), Node.js 18 or later, and network access to nebula.gg. Signing in opens a browser.
 metadata:
   author: Agent Labs
-  version: "0.9.2"
-  cli-version: "0.1.43"
+  version: "0.9.3"
+  cli-version: "0.1.46"
 ---
 
 # Nebula AI
@@ -26,11 +26,11 @@ before running anything else.
 1. Run `nebula-ai --version`.
    - Command not found: the CLI is missing. Ask before changing the machine,
      then install the verified version with
-     `npm install --global nebula-ai@0.1.43`.
-   - A version newer than `0.1.43`: this skill is out of date. Tell the user
+     `npm install --global nebula-ai@0.1.46`.
+   - A version newer than `0.1.46`: this skill is out of date. Tell the user
      to update it with `npx skills update nebula-ai`, or to reinstall it, then
      continue.
-   - Any version other than `0.1.43`: tell the user when a command or output
+   - Any version other than `0.1.46`: tell the user when a command or output
      shape does not match this guide. Do not upgrade or downgrade the CLI
      without approval.
 2. Run `nebula-ai --json status`.
@@ -106,7 +106,7 @@ before running anything else.
    [Continue a conversation](#continue-a-conversation).
 4. Attach local files only when the user asked for that exact disclosure.
    `tasks create` cannot attach them, so send new work with
-   `chat --no-stream --new --agent <agent-handle>` instead and add
+   `chat --no-stream --agent <agent-handle>` instead and add
    `--context "<glob>"`, repeatable, quoted so the CLI expands it relative to
    the current directory. Uploads are limited to 50 files and 512 KiB in
    total.
@@ -218,12 +218,9 @@ the `id` that `tasks create` prints.
 
 - Read what happened in a thread with
   `nebula-ai --json messages list --task <thread-id> --limit 50`.
-- `chat --agent <agent-handle>` sends to the agent's single direct-message
-  thread, which keeps every earlier request in context under the first
-  request's title. Use it only when the user wants that thread; start new
-  work with `tasks create`. `chat --new --agent <agent-handle>` starts a
-  fresh private thread with the agent instead; it cannot be combined with
-  `--task`.
+- Every `chat --agent <agent-handle>` without `--task` starts a new private
+  thread with that agent, so never use it for a follow-up. Without `--agent`
+  or `--task`, `chat` posts to Nebula in Home.
 - If the `thread_id` was lost, find the thread with
   `nebula-ai --json tasks list --mine --limit 20`, raising `--limit` (for
   example to `100`) when it is not there, and confirm it with
@@ -250,6 +247,7 @@ This skill covers delegation. Unless the user explicitly asks, do not use
 voice calls (`call`), computer use (`local-device`, `install`,
 `uninstall`), scheduled jobs (`jobs`), workspace variables (`variables`),
 Miniapps, skills, Channel administration, posting or editing Channel
-messages, agent creation and editing, or the ACP editor server (`acp`). Each changes the user's machine,
+messages, agent creation and editing, the ACP editor server (`acp`), or the
+MCP server (`mcp`). Each changes the user's machine,
 account, or workspace; confirm the exact command with `--help` and get
 approval first.

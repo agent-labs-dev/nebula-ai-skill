@@ -1,4 +1,4 @@
-# nebula-ai 0.1.43
+# nebula-ai 0.1.46
 
 ===== nebula-ai
 Usage: nebula-ai [options] [command]
@@ -14,6 +14,7 @@ Options:
   --workspace <id-slug-or-name>  Workspace to use for this session (overrides
                                  stored preference)
   --no-color                     Disable colors
+  --trace                        Record timing spans to ~/.nebula/logs
   -h, --help                     display help for command
 
 Commands:
@@ -57,6 +58,8 @@ Commands:
                                  (bash|zsh|fish)
   capabilities                   Probe and print this host's capability snapshot
   logs                           Inspect Nebula log files on disk
+  mcp [options]                  Serve Nebula's tools to an MCP client
+                                 (--stdio), or sign in (--login)
   kiln                           Talk to the coding-agent sessions kiln runs on
                                  this computer
   workspace                      Manage workspaces
@@ -136,14 +139,12 @@ Arguments:
   message                 Message to send (omit when using --resume)
 
 Options:
-  -a, --agent <name>      Agent name, slug, or ID (defaults to first active
-                          agent)
+  -a, --agent <name>      Agent name, slug, or ID (defaults to Home)
   -t, --task <id>         Send to a specific Task instead of an agent DM
   --context <glob>        Attach files matching a glob pattern (repeatable, e.g.
                           --context 'src/**/*.ts') (default: [])
   -r, --resume <task-id>  Boot the TUI directly into an existing Task (no
                           message needed)
-  --new                   Start a new chat with the agent instead of its DM
   --no-stream             Wait quietly, without the running tool commentary
   -h, --help              display help for command
 
@@ -257,14 +258,15 @@ Commands:
                                        Channel
   remove-miniapp <space> <miniapp>     Take a Miniapp off a Channel (the app
                                        itself stays)
-  model <space> <model>                Set the model for new Tasks in a Channel,
-                                       or Home's own
+  model <space> <model>                Set the model a Channel's orchestrator
+                                       runs, or the model Home's next Task runs
+                                       on
+  models                               List the models a Channel's orchestrator
+                                       can run
   appearance [options] <space>         Set a Channel icon and color
   agents <space>                       List a Channel's agents
   add-agent <space> <agent>            Add an agent to a Channel
   remove-agent <space> <agent>         Remove an agent from a Channel
-  default-model <space> <model>        Set the default model for new Tasks in a
-                                       Channel
   devices <space>                      List devices linked to a Channel
   add-device [options] <space>         Add a cloud device or this computer to a
                                        Channel
@@ -292,11 +294,13 @@ Usage: nebula-ai channels create [options] <name>
 Create a Channel
 
 Arguments:
-  name           Channel name
+  name                     Channel name
 
 Options:
-  --kind <kind>  shared or private (default: "private")
-  -h, --help     display help for command
+  --kind <kind>            shared or private (default: "private")
+  --channel-model <model>  The model the Channel's orchestrator runs (defaults
+                           to the workspace's starting pick)
+  -h, --help               display help for command
 
 ===== nebula-ai channels join
 Usage: nebula-ai channels join [options] <space>
@@ -413,11 +417,20 @@ Options:
 ===== nebula-ai channels model
 Usage: nebula-ai channels model [options] <space> <model>
 
-Set the model for new Tasks in a Channel, or Home's own
+Set the model a Channel's orchestrator runs, or the model Home's next Task runs
+on
 
 Arguments:
   space       Channel handle (or home)
-  model       Model ID
+  model       A Channel model ID (see `channels models`), or a model ID for home
+
+Options:
+  -h, --help  display help for command
+
+===== nebula-ai channels models
+Usage: nebula-ai channels models [options]
+
+List the models a Channel's orchestrator can run
 
 Options:
   -h, --help  display help for command
@@ -473,18 +486,6 @@ Remove an agent from a Channel
 Arguments:
   space       Channel handle (or home)
   agent       Agent ID or handle
-
-Options:
-  -h, --help  display help for command
-
-===== nebula-ai channels default-model
-Usage: nebula-ai channels default-model [options] <space> <model>
-
-Set the default model for new Tasks in a Channel
-
-Arguments:
-  space       Channel handle (or home)
-  model       Model ID
 
 Options:
   -h, --help  display help for command
@@ -719,6 +720,8 @@ Options:
   -h, --help                     display help for command
 
 Commands:
+  models                         List the models an agent can run on in this
+                                 workspace
   list [options]                 List the workspace's agents
   get <id>                       Get an agent's details
   create [options] <name>        Create an agent
@@ -729,6 +732,14 @@ Commands:
   delete <id>                    Delete an agent
   skills                         Manage agent skills
   help [command]                 display help for command
+
+===== nebula-ai agents models
+Usage: nebula-ai agents models [options]
+
+List the models an agent can run on in this workspace
+
+Options:
+  -h, --help  display help for command
 
 ===== nebula-ai agents list
 Usage: nebula-ai agents list [options]
@@ -762,7 +773,8 @@ Arguments:
 
 Options:
   -d, --description <desc>  What the agent is for
-  -m, --model <model>       Model id (defaults to the workspace's)
+  -m, --model <model>       Model id the agent runs on (required; `nebula-ai
+                            agents models` lists them)
   --channel <handle>        Put the agent on this Channel's roster
   --toolkit <slug>          A toolkit to give it (repeat for more) (default: [])
   --access <level>          What the rest of the workspace may do with it: none,
@@ -1652,6 +1664,18 @@ Print the path to ~/.nebula/logs/
 
 Options:
   -h, --help  display help for command
+
+===== nebula-ai mcp
+Usage: nebula-ai mcp [options]
+
+Serve Nebula's tools to an MCP client (--stdio), or sign in (--login)
+
+Options:
+  --stdio         Serve the hosted MCP endpoint over stdin and stdout
+  --login         Sign this machine in to the hosted MCP endpoint
+  --agent <slug>  With --stdio, speak as this agent: its posts carry its name
+                  and its tags reach this client
+  -h, --help      display help for command
 
 ===== nebula-ai kiln
 Usage: nebula-ai kiln [options] [command]
