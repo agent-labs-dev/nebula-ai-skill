@@ -34,7 +34,7 @@ and never approve an ask for the user:
 | Step | CLI | MCP |
 |---|---|---|
 | Choose an agent | `agents list` | `list_agents` (no paging: if the agent you need is missing, use `agents list --query`) |
-| Delegate | `tasks create -a <handle>` | `post_to_task` with `@agent:<slug>` (always name the agent) |
+| Delegate | `tasks create -a <handle>` | `post_to_task` with `message` (starting `@agent:<slug>`, always name the agent) and `expects_response` |
 | Wait and read | `tasks get`, `messages list --task` | `check_work_status` with `post_to_task`'s `thread_slug` as `slug`, and the same `channel_handle` outside Home |
 | Read a Channel | `messages list --channel <handle>` | `read_channel_messages` |
 
