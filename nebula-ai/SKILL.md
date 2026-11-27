@@ -2,7 +2,7 @@
 name: nebula-ai
 description: Install and use the Nebula AI CLI to delegate tasks to specialized Nebula agents and work through user-authorized services such as Gmail, Slack, GitHub, Linear, and calendars without exposing service credentials. Use when the user asks to use Nebula, contact or delegate to a Nebula agent, inspect Nebula channels or threads, continue delegated work, or act through an account connected to their Nebula workspace.
 license: MIT
-compatibility: Requires the nebula-ai CLI 0.1.43 (npm package nebula-ai), Node.js 18 or later, and network access to nebula.gg. Signing in opens a browser.
+compatibility: Uses Nebula's MCP tools when the client has them connected, otherwise requires the nebula-ai CLI 0.1.43 (npm package nebula-ai) and Node.js 18 or later. Needs network access to nebula.gg. Signing in opens a browser.
 metadata:
   author: Agent Labs
   version: "0.9.3"
@@ -35,8 +35,8 @@ and never approve an ask for the user:
 |---|---|---|
 | Choose an agent | `agents list` | `list_agents` (no paging: if the agent you need is missing, use `agents list --query`) |
 | Delegate | `tasks create -a <handle>` | `post_to_task` with `@agent:<slug>` (always name the agent) |
-| Wait and read | `tasks get`, `messages list --task` | `check_work_status` with the Task's `slug` |
-| Read a Channel | `messages list` | `read_channel_messages` |
+| Wait and read | `tasks get`, `messages list --task` | `check_work_status` with `post_to_task`'s `thread_slug` as `slug`, and the same `channel_handle` outside Home |
+| Read a Channel | `messages list --channel <handle>` | `read_channel_messages` |
 
 The MCP tools cannot relay an approval or attach local files. For those, or
 for any command in [references/cli.md](references/cli.md), use the CLI.
