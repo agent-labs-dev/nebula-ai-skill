@@ -27,19 +27,21 @@ If your client already lists Nebula MCP tools (`list_agents`, `post_to_task`,
 `check_work_status`, `list_channels`, `read_channel_messages`), use them
 instead of the CLI: they need no install or `nebula-ai login`, because the
 client signed in when it connected. To connect one, see
-<https://docs.nebula.gg/docs/workspace/connect-your-ai-client>. Skip the CLI install and login steps under Prepare. The rules below
+<https://docs.nebula.gg/docs/workspace/connect-your-ai-client>. Skip the CLI steps under Prepare while you use MCP only. The rules below
 still apply, so choose the agent, get approval for writes, wait for the result
 and never approve an ask for the user:
 
 | Step | CLI | MCP |
 |---|---|---|
-| Choose an agent | `agents list` | `list_agents` (no paging: if the agent you need is missing, use `agents list --query`) |
+| Choose an agent | `agents list` | `list_agents` (no paging, and a long roster may be cut off: to choose among all agents, or if the one you need is missing, use `agents list`) |
 | Delegate | `tasks create -a <handle>` | `post_to_task` with `message` (starting `@agent:<slug>`, always name the agent) and `expects_response` |
 | Wait and read | `tasks get`, `messages list --task` | `check_work_status` with `post_to_task`'s `thread_slug` as `slug`, and the same `channel_handle` outside Home |
 | Read a Channel | `messages list --channel <handle>` | `read_channel_messages` |
 
 The MCP tools cannot relay an approval or attach local files. For those, or
-for any command in [references/cli.md](references/cli.md), use the CLI.
+for any command in [references/cli.md](references/cli.md), use the CLI: run all of Prepare first, and
+set `--workspace` to the workspace the MCP connection signed in to, since the CLI's saved
+default can differ.
 
 ## Prepare
 
