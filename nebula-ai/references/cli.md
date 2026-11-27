@@ -1,12 +1,12 @@
 # nebula-ai CLI reference
 
-Commands relevant to delegation in nebula-ai 0.1.43. For anything else, read
+Commands relevant to delegation in nebula-ai 0.1.46. For anything else, read
 the command's `--help` output before running it.
 
 ## Install and sign in
 
 ```sh
-npm install --global nebula-ai@0.1.43
+npm install --global nebula-ai@0.1.46
 nebula-ai --version
 nebula-ai login
 nebula-ai status
@@ -76,11 +76,9 @@ How each command finds an agent:
 | `tasks create -a` | Handle only; an ID or name is refused | The Channel's roster |
 | `chat --agent` | ID, handle, or case-insensitive name | Every agent you can read; another Channel lead is refused before sending |
 
-The workspace's own `Nebula` agent is the Home assistant. Naming it sends
-`chat` to Home rather than to an agent DM; it runs no Task. Use it only when
-the user wants to talk to Nebula itself.
-
-Without `--agent`, chat uses the first enabled, non-system agent.
+The workspace's own `Nebula` agent is the Home assistant. Naming it, or
+leaving out both `--agent` and `--task`, sends `chat` to Home; it runs no
+Task. Use it only when the user wants to talk to Nebula itself.
 
 `toolkits` in the listing names the services an agent can use. Agents act
 through the connected accounts of the person requesting work, and the CLI
@@ -91,14 +89,13 @@ connect it in Nebula.
 
 ```sh
 nebula-ai --json --no-color chat --no-stream --task "<thread-id>" -- "<follow-up>"
-nebula-ai --json --no-color chat --no-stream --new --agent "<agent>" -- "<task>"
+nebula-ai --json --no-color chat --no-stream --agent "<agent>" -- "<task>"
 nebula-ai --json --no-color chat --no-stream --agent "<agent>" --context "docs/*.md" -- "<task>"
 ```
 
 | Option | Effect |
 |---|---|
-| `-a, --agent <agent>` | Send to this agent's direct-message thread, or to Home for the workspace's own Nebula: an ID, handle, or name. Every request sent to an agent this way shares one thread and keeps its first title, so start unrelated work with `tasks create`. |
-| `--new` | With `--agent`, start a new private thread with the agent instead of its direct-message thread. Cannot be combined with `--task`; a `usage` error for the Home Nebula. |
+| `-a, --agent <agent>` | Start a new private thread with this agent: an ID, handle, or name. The workspace's own Nebula, also the default, is reached in Home instead. Send a follow-up with `--task`. |
 | `-t, --task <thread-id>` | Send to an existing thread. Takes precedence over `--agent`. |
 | `--context <glob>` | Upload matching files with the message. Repeatable. Quote the glob. At most 50 files and 512 KiB in total; a glob that matches nothing is an error. |
 | `--no-stream` | Wait, for up to 15 minutes, and print one result. Always use it for automation; run it in the background when your tool calls are capped below 15 minutes. |
@@ -161,7 +158,7 @@ behalf.
 |---|---|---|
 | CLI missing | The shell reports `command not found` (exit `127`) | Ask, then install the verified version. |
 | Not signed in | Exit `3`; `status` prints `auth.logged_in` false, other commands print an `auth_required` error | Run `nebula-ai login` and wait for the user. |
-| Unknown command, option, or unknown or ambiguous `--workspace` | Exit `2`, `usage` error; nothing read or written | Check `--help`, or fix the workspace without substituting another; the installed CLI may differ from 0.1.43. |
+| Unknown command, option, or unknown or ambiguous `--workspace` | Exit `2`, `usage` error; nothing read or written | Check `--help`, or fix the workspace without substituting another; the installed CLI may differ from 0.1.46. |
 | Task, message, approval, `agents get` target or `chat --agent` agent not found | Exit `6`, `not_found` error, nothing sent | Re-list agents, Tasks or approvals; do not substitute another. |
 | Run failed | Exit `1`, JSON printed with `status` `failed` | Report it once. |
 | Run waiting for the user | Exit `4`, JSON printed with `status` `waiting` and `pending` | See the result handling in SKILL.md. |
