@@ -4,6 +4,14 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the skill uses
 [Semantic Versioning](https://semver.org).
 
+## [0.9.4] - 2026-11-27
+
+Verified against nebula-ai CLI 0.1.46.
+
+### Added
+
+- Use Nebula's MCP tools instead of the CLI when the client already has them connected, with a step-by-step mapping and a link to the connect guide.
+
 ## [0.9.3] - 2026-11-26
 
 Verified against nebula-ai CLI 0.1.46.

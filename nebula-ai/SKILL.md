@@ -2,16 +2,16 @@
 name: nebula-ai
 description: Install and use the Nebula AI CLI to delegate tasks to specialized Nebula agents and work through user-authorized services such as Gmail, Slack, GitHub, Linear, and calendars without exposing service credentials. Use when the user asks to use Nebula, contact or delegate to a Nebula agent, inspect Nebula channels or threads, continue delegated work, or act through an account connected to their Nebula workspace.
 license: MIT
-compatibility: Requires the nebula-ai CLI 0.1.46 (npm package nebula-ai), Node.js 18 or later, and network access to nebula.gg. Signing in opens a browser.
+compatibility: Uses Nebula's MCP tools when the client has them connected, otherwise requires the nebula-ai CLI 0.1.46 (npm package nebula-ai) and Node.js 18 or later. Needs network access to nebula.gg. Signing in opens a browser.
 metadata:
   author: Agent Labs
-  version: "0.9.3"
+  version: "0.9.4"
   cli-version: "0.1.46"
 ---
 
 # Nebula AI
 
-Use `nebula-ai` as a delegation boundary. The local agent sends a task to a
+Use Nebula as a delegation boundary, through its MCP tools or the `nebula-ai` CLI. The local agent sends a task to a
 specialized Nebula agent; Nebula acts through the accounts authorized in the
 user's workspace. Never request, copy, print, or export provider credentials.
 
@@ -20,6 +20,28 @@ output is machine-readable. Stay in the user's working directory, because
 relative `--context` globs resolve against it. Commands and options not shown
 here are in [references/cli.md](references/cli.md); read a command's `--help`
 before running anything else.
+
+## Use the MCP tools when they are connected
+
+If your client already lists Nebula MCP tools (`list_agents`, `post_to_task`,
+`check_work_status`, `list_channels`, `read_channel_messages`), use them
+instead of the CLI: they need no install or `nebula-ai login`, because the
+client signed in when it connected. To connect one, see
+<https://docs.nebula.gg/docs/workspace/connect-your-ai-client>. Skip the CLI steps under Prepare while you use MCP only. The rules below
+still apply, so choose the agent, get approval for writes, wait for the result
+and never approve an ask for the user:
+
+| Step | CLI | MCP |
+|---|---|---|
+| Choose an agent | `agents list` | `list_agents` (no paging, and a long roster may be cut off: to choose among all agents, or if the one you need is missing, use `agents list`) |
+| Delegate | `tasks create -a <handle>` | `post_to_task` with `message` (starting `@agent:<slug>`, always name the agent) and `expects_response` |
+| Wait and read | `tasks get`, `messages list --task` | `check_work_status` with `post_to_task`'s `thread_slug` as `slug`, and the same `channel_handle` outside Home |
+| Read a Channel | `messages list --channel <handle>` | `read_channel_messages` |
+
+The MCP tools cannot relay an approval or attach local files. For those, or
+for any command in [references/cli.md](references/cli.md), use the CLI: run all of Prepare first, and
+set `--workspace` to the workspace the MCP connection signed in to, since the CLI's saved
+default can differ.
 
 ## Prepare
 
