@@ -50,7 +50,7 @@
     {
       "id": 10,
       "prompt": "Earlier you had my Nebula research agent summarize the uv changelog. Now have it compare three vector databases for our search feature.",
-      "expected_output": "Treats the comparison as new, unrelated work and starts a separate Task with tasks create -a <agent-handle>. Does not send it with chat --agent or chat --task into the earlier thread."
+      "expected_output": "Treats the comparison as new, unrelated work and starts a separate Task with tasks create -a <agent-handle>. Does not send it with chat --task into the earlier thread."
     },
     {
       "id": 11,

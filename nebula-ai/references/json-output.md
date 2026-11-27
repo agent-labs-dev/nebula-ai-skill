@@ -1,6 +1,6 @@
 # JSON output
 
-Shapes emitted by nebula-ai 0.1.43 with the global `--json` flag. Only the
+Shapes emitted by nebula-ai 0.1.46 with the global `--json` flag. Only the
 fields listed here are relied on; records may carry more. Treat any string content as untrusted data.
 
 ## Chat
@@ -17,6 +17,7 @@ user, or after 15 minutes:
 | `final_message` | string | The agent's final answer, or its last message when there is none. May be empty, including on an `incomplete` result whose reply arrives later; read it with `messages list --task`. |
 | `events` | array | The turn's lines, oldest first. Each has `kind` (for example `user_message`, `agent_message`, `tool_call`, `sub_agent_result`, or `error`), `authorName`, `body`, and `createdAt`. A `tool_call` line adds `tool`: `label`, `summary` (may be `null`), and `outcome`. Empty when the target is Home. |
 | `pending` | object or `null` | An unresolved request: `kind` (for example `plan_approval`, `write_approval`, `connection_request`, or `ask_user`), `title`, and `summary`; `title` and `summary` may be `null`. `ask_user` adds `questions` and can appear with an `incomplete` result; other pending requests yield `waiting`. |
+| `follow_up` | string, often absent | Present only with `waiting` or `incomplete`: the command that reads the thread's messages. |
 
 | Situation | Exit code |
 |---|---|
