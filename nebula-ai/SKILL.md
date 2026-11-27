@@ -27,14 +27,14 @@ If your client already lists Nebula MCP tools (`list_agents`, `post_to_task`,
 `check_work_status`, `list_channels`, `read_channel_messages`), use them
 instead of the CLI: they need no install or `nebula-ai login`, because the
 client signed in when it connected. To connect one, see
-<https://docs.nebula.gg/docs/workspace/connect-your-ai-client>. The rules below
+<https://docs.nebula.gg/docs/workspace/connect-your-ai-client>. Skip the CLI install and login steps under Prepare. The rules below
 still apply, so choose the agent, get approval for writes, wait for the result
 and never approve an ask for the user:
 
 | Step | CLI | MCP |
 |---|---|---|
-| Choose an agent | `agents list` | `list_agents` (check it was not cut off at 50) |
-| Delegate | `tasks create -a <handle>` | `post_to_task` with `@agent:<handle>` |
+| Choose an agent | `agents list` | `list_agents` (no paging: if the agent you need is missing, use `agents list --query`) |
+| Delegate | `tasks create -a <handle>` | `post_to_task` with `@agent:<slug>` (always name the agent) |
 | Wait and read | `tasks get`, `messages list --task` | `check_work_status` with the Task's `slug` |
 | Read a Channel | `messages list` | `read_channel_messages` |
 
