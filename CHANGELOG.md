@@ -4,6 +4,27 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the skill uses
 [Semantic Versioning](https://semver.org).
 
+## [0.10.0] - 2026-11-28
+
+Verified against nebula-ai CLI 0.1.47.
+
+### Changed
+
+- Make Nebula's MCP server the default path: ask the user to sign in when it is
+  configured but signed out, offer to connect it when it is missing, and keep
+  the CLI for clients without MCP and for steps MCP cannot do.
+- Describe all eight MCP tools, how to follow a Task through its states and
+  hand-offs, which agent answered, and what to do when a post fails or a write
+  is refused.
+- Update the supported CLI version and generated command surface to 0.1.47.
+- Document that `messages list` leaves a Channel's agent activity out unless
+  `--agent-activity` is passed.
+
+### Fixed
+
+- `list_agents` returns every agent you can see; drop the advice that a long
+  roster may be cut off.
+
 ## [0.9.4] - 2026-11-27
 
 Verified against nebula-ai CLI 0.1.46.

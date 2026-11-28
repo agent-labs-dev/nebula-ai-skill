@@ -49,7 +49,7 @@ closes the ones it supersedes. CI then fails pull requests that change
 ## Style
 
 - Write instructions as direct, imperative steps an agent can follow.
-- Describe only released, publicly documented CLI behavior.
+- Describe only released, publicly documented CLI and MCP behavior.
 - Use placeholders such as `<agent-handle>` and `<thread-id>`, never real IDs,
   accounts, or email addresses.
 - Call the CLI directly. If a task needs a helper script, fix the CLI instead.

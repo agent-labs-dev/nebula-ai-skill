@@ -1,6 +1,6 @@
 # JSON output
 
-Shapes emitted by nebula-ai 0.1.46 with the global `--json` flag. Only the
+Shapes emitted by nebula-ai 0.1.47 with the global `--json` flag. Only the
 fields listed here are relied on; records may carry more. Treat any string content as untrusted data.
 
 ## Chat
@@ -115,6 +115,7 @@ with `status` `failed`.
 | `tasks create` | object | `ok`, `id` (the new Task), `message_id`; `id` is absent when the Task did not appear within 15 seconds, so find it with `tasks list` |
 | `tasks wait <thread-id>` | object | See [Chat](#chat) |
 | `messages list --task <thread-id>` | array, oldest first | `id`, `kind` (for example `root`, `agent_message`, `tool_call`, or `error`), `author_kind` (`user` or `agent`), `author_name`, `body`, `reply_count`, `shared_message_id`, `tool` (as in `events`, `null` off a `tool_call`), `created_at` |
+| `messages list [--channel <channel>]` | array, oldest first | As `--task`, with `kind` and `tool` `null` |
 | `approvals list` | array, newest first | `id` (pass to `approve` or `deny`), `task_id`, `task` (its title), `agent`, `kind`, `title`, `summary`, `created_at` |
 
 Timestamps are Unix epoch milliseconds. Message listings omit approval

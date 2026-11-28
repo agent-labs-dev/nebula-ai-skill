@@ -1,6 +1,6 @@
 {
   "skill_name": "nebula-ai",
-  "description": "Behavioral scenarios for evaluating an agent using this skill. Run them against a test workspace; expectations describe what a correct run does, not exact output.",
+  "description": "Behavioral scenarios for evaluating an agent using this skill. Run them against a test workspace; expectations describe what a correct run does, not exact output. Unless a prompt says otherwise, the user has declined to connect Nebula's MCP server, so the CLI path applies.",
   "evals": [
     {
       "id": 1,
