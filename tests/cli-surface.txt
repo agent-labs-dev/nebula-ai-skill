@@ -1,4 +1,4 @@
-# nebula-ai 0.1.46
+# nebula-ai 0.1.47
 
 ===== nebula-ai
 Usage: nebula-ai [options] [command]
@@ -931,6 +931,7 @@ Options:
   --channel <name>  Channel handle or ID (defaults to Home)
   --task <id>       Read this Task's conversation instead
   --limit <n>       Max messages (default: "30")
+  --agent-activity  Include the Channel's agent activity
   -h, --help        display help for command
 
 ===== nebula-ai messages replies

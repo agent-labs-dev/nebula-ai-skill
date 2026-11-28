@@ -1,19 +1,114 @@
 ---
 name: nebula-ai
-description: Install and use the Nebula AI CLI to delegate tasks to specialized Nebula agents and work through user-authorized services such as Gmail, Slack, GitHub, Linear, and calendars without exposing service credentials. Use when the user asks to use Nebula, contact or delegate to a Nebula agent, inspect Nebula channels or threads, continue delegated work, or act through an account connected to their Nebula workspace.
+description: Delegate tasks to specialized Nebula agents through Nebula's MCP server or the nebula-ai CLI, and work through user-authorized services such as Gmail, Slack, GitHub, Linear, and calendars without exposing service credentials. Use when the user asks to use, connect or install Nebula, contact or delegate to a Nebula agent, inspect Nebula channels or threads, continue delegated work, or act through an account connected to their Nebula workspace.
 license: MIT
-compatibility: Uses Nebula's MCP tools when the client has them connected, otherwise requires the nebula-ai CLI 0.1.46 (npm package nebula-ai) and Node.js 18 or later. Needs network access to nebula.gg. Signing in opens a browser.
+compatibility: Uses Nebula's hosted MCP server by default. Clients without MCP, and steps MCP cannot do, need the nebula-ai CLI 0.1.47 (npm package nebula-ai) and Node.js 18 or later. Needs network access to nebula.gg. Signing in opens a browser.
 metadata:
   author: Agent Labs
-  version: "0.9.4"
-  cli-version: "0.1.46"
+  version: "0.10.0"
+  cli-version: "0.1.47"
 ---
 
 # Nebula AI
 
-Use Nebula as a delegation boundary, through its MCP tools or the `nebula-ai` CLI. The local agent sends a task to a
+Use Nebula as a delegation boundary. The local agent sends a task to a
 specialized Nebula agent; Nebula acts through the accounts authorized in the
 user's workspace. Never request, copy, print, or export provider credentials.
+
+## Pick the path
+
+MCP is the default. Take the first case that matches:
+
+1. Your client lists Nebula's MCP tools, such as `list_agents` and
+   `post_to_task`: [work through MCP](#work-through-mcp). It needs no CLI
+   install or `nebula-ai login`.
+2. Nebula's MCP server is configured but not signed in: ask the user to sign
+   in through the client's MCP authentication, and wait. In Claude Code they
+   run `/mcp` and choose the server, or run `claude mcp login <name>`. For the
+   stdio bridge they run `nebula-ai mcp --login`; `nebula-ai login` does not
+   sign it in. Do not switch to the CLI meanwhile.
+3. Your client supports MCP but has no Nebula server: offer to connect it,
+   following the client's steps in
+   <https://docs.nebula.gg/docs/workspace/connect-your-ai-client>. In Claude
+   Code, once the user agrees, run the command below, then have them sign in as
+   in case 2.
+
+   ```sh
+   claude mcp add --transport http nebula https://api.nebula.gg/mcp
+   ```
+
+4. The client cannot use MCP, or the user declines to connect it or sign in:
+   [work through the CLI](#work-through-the-cli).
+
+While on MCP, use the CLI only for what MCP cannot do: relay an approval
+decision, attach local files, show an agent's `toolkits` and `can_run`, read
+what `check_work_status` clips or omits, or run a command that has no MCP tool.
+Run all of [Prepare](#prepare) first, and pass `--workspace` with the workspace
+the MCP connection signed in to (ask the user if you do not know it), since the
+CLI's saved default can differ. The CLI names a Task by its ID, not MCP's
+`thread_slug`: find it as for a lost `thread_id` in
+[Continue a conversation](#continue-a-conversation).
+
+## Rules on both paths
+
+- Classify the task. Searching, reading, and summarizing are read-only.
+  Sending, posting, replying, scheduling, deleting, purchasing, publishing, or
+  changing external data are writes.
+- For a write, state the destination and effect and get the user's explicit
+  approval before delegating. Approval to investigate is not approval to send.
+- Do not substitute another agent, account, or workspace for one that is
+  missing or refused.
+- Report the agent's reply, not just that the task was sent. In a headless
+  session, keep polling until the Task settles before you finish.
+
+## Work through MCP
+
+| Tool | Use |
+|---|---|
+| `list_agents` | The agents you can see: `slug`, `name`, `purpose`, and `kind`. |
+| `post_to_task` | Start or continue a Task. |
+| `check_work_status` | Read a Task's `state` and recent `conversation`. |
+| `list_channels` | The Channels you can reach, apart from your Home. |
+| `read_channel_messages` | A Channel's messages, newest first. |
+| `list_channel_members` | A Channel's people, with the `username` to mention. |
+| `post_to_channel` | Post a message that asks nobody for a reply. |
+| `create_channel` | Create a Channel. |
+
+Omit a tool's Channel argument to use the user's Home. Take the other arguments
+from the tool's schema.
+
+1. Choose an agent from `list_agents` by `name`, `slug`, and `purpose`; do not
+   invent one. The list does not show which services an agent can use, so when
+   the task depends on one and `purpose` does not settle it, ask the user or
+   check `toolkits` with the CLI.
+2. Send new work with `post_to_task`, without `task`: set `expects_response`
+   to true and put one `@agent:<slug>` in `message`. The call returns once the
+   message is posted; keep its `thread_slug` and `channel`. If it fails without
+   saying the post was refused, look for it with `check_work_status` (no
+   `slug`) and `read_channel_messages` before sending again, which could repeat
+   a write.
+3. Every 30 to 60 seconds, call `check_work_status` with `thread_slug` as
+   `slug` and `channel` as `channel_handle`, and branch on `state`:
+   - `not_started` or `running`: poll again.
+   - `stalled_on_person`: tell the user what `state_line` says it waits on, and
+     have them answer in Nebula. If they would rather decide an approval here,
+     [relay it](#relay-an-approval) with the CLI.
+   - `finished`: settled once `conversation` shows the agent's answer after
+     your message; until then, poll again.
+   - `failed` or `canceled`: settled. Report the outcome.
+   - `unclear`: not done. Poll again, and report it if it stays.
+4. Follow up on the same work with `post_to_task`: `thread_slug` as `task`,
+   `channel` as `channel_handle`, the same `@agent:<slug>`, and
+   `expects_response` true. Unrelated work gets a new Task. If the slug is
+   lost, `check_work_status` without `slug` lists the live Tasks agents started
+   in a Channel; if yours is not there, ask the user. Do not guess: an unused
+   `task` handle starts a new Task.
+
+When MCP refuses a write, because it needs approval or the hourly write limit
+is spent (`rate_limited`), tell the user and let them approve or do it in
+Nebula. Do not retry it through MCP or the CLI.
+
+## Work through the CLI
 
 Run the CLI directly, with the global `--json` flag before the command so
 output is machine-readable. Stay in the user's working directory, because
@@ -21,38 +116,16 @@ relative `--context` globs resolve against it. Commands and options not shown
 here are in [references/cli.md](references/cli.md); read a command's `--help`
 before running anything else.
 
-## Use the MCP tools when they are connected
-
-If your client already lists Nebula MCP tools (`list_agents`, `post_to_task`,
-`check_work_status`, `list_channels`, `read_channel_messages`), use them
-instead of the CLI: they need no install or `nebula-ai login`, because the
-client signed in when it connected. To connect one, see
-<https://docs.nebula.gg/docs/workspace/connect-your-ai-client>. Skip the CLI steps under Prepare while you use MCP only. The rules below
-still apply, so choose the agent, get approval for writes, wait for the result
-and never approve an ask for the user:
-
-| Step | CLI | MCP |
-|---|---|---|
-| Choose an agent | `agents list` | `list_agents` (no paging, and a long roster may be cut off: to choose among all agents, or if the one you need is missing, use `agents list`) |
-| Delegate | `tasks create -a <handle>` | `post_to_task` with `message` (starting `@agent:<slug>`, always name the agent) and `expects_response` |
-| Wait and read | `tasks get`, `messages list --task` | `check_work_status` with `post_to_task`'s `thread_slug` as `slug`, and the same `channel_handle` outside Home |
-| Read a Channel | `messages list --channel <handle>` | `read_channel_messages` |
-
-The MCP tools cannot relay an approval or attach local files. For those, or
-for any command in [references/cli.md](references/cli.md), use the CLI: run all of Prepare first, and
-set `--workspace` to the workspace the MCP connection signed in to, since the CLI's saved
-default can differ.
-
-## Prepare
+### Prepare
 
 1. Run `nebula-ai --version`.
    - Command not found: the CLI is missing. Ask before changing the machine,
      then install the verified version with
-     `npm install --global nebula-ai@0.1.46`.
-   - A version newer than `0.1.46`: this skill is out of date. Tell the user
+     `npm install --global nebula-ai@0.1.47`.
+   - A version newer than `0.1.47`: this skill is out of date. Tell the user
      to update it with `npx skills update nebula-ai`, or to reinstall it, then
      continue.
-   - Any version other than `0.1.46`: tell the user when a command or output
+   - Any version other than `0.1.47`: tell the user when a command or output
      shape does not match this guide. Do not upgrade or downgrade the CLI
      without approval.
 2. Run `nebula-ai --json status`.
@@ -69,7 +142,7 @@ default can differ.
    not substitute another workspace. Never switch workspaces silently;
    `workspace switch` changes the saved default for every later command.
 
-## Choose an agent
+### Choose an agent
 
 1. List agents with only the fields you need, since a large workspace's full
    listing runs to hundreds of kilobytes:
@@ -93,17 +166,11 @@ default can differ.
    person requesting work; the CLI cannot list those accounts or their status.
 3. If no agent has the needed toolkit, or Nebula reports the account missing
    (a `connection_request` in `pending`), name the service and ask the user to
-   connect it in Nebula. Do not substitute another account, agent, or
-   workspace.
+   connect it in Nebula.
 
-## Delegate
+### Delegate
 
-1. Classify the task. Searching, reading, and summarizing are read-only.
-   Sending, posting, replying, scheduling, deleting, purchasing, publishing, or
-   changing external data are writes.
-2. For a write, state the destination and effect and get the user's explicit
-   approval before delegating. Approval to investigate is not approval to send.
-3. Send the task, with `--` before the message so text beginning with `-` is
+1. Send the task, with `--` before the message so text beginning with `-` is
    not read as an option. New work that is not a follow-up gets its own Task:
 
    ```sh
@@ -128,14 +195,14 @@ default can differ.
    `messages list --task`. Report permission refusals without substituting
    another agent. For a follow-up on the same work, see
    [Continue a conversation](#continue-a-conversation).
-4. Attach local files only when the user asked for that exact disclosure.
+2. Attach local files only when the user asked for that exact disclosure.
    `tasks create` cannot attach them, so send new work with
    `chat --no-stream --agent <agent-handle>` instead and add
    `--context "<glob>"`, repeatable, quoted so the CLI expands it relative to
    the current directory. Uploads are limited to 50 files and 512 KiB in
    total.
 
-## Wait for the result
+### Wait for the result
 
 Poll the Task rather than holding one long call open:
 
@@ -154,8 +221,6 @@ Poll the Task rather than holding one long call open:
      so until that message appears, poll again.
 2. Read the reply with
    `nebula-ai --json messages list --task <thread-id> --limit 20`.
-3. In a headless session, keep polling until the Task settles before you
-   finish, and report the agent's reply, not just that the task was sent.
 
 `nebula-ai --json tasks wait <thread-id>` is the blocking form: it waits on
 the Task's newest turn for up to 15 minutes and prints the same object and
@@ -164,7 +229,7 @@ exit codes as `chat --no-stream` (see
 only where `chat --no-stream` could run. Exit `5` with nothing printed means
 the Task opened no turn within 15 seconds: poll `tasks get` instead.
 
-## Relay an approval
+### Relay an approval
 
 When a Task is `waiting`, or a result reads `waiting`, list what it asks:
 
@@ -182,7 +247,7 @@ for it. Only write and plan approvals take a yes or no here; for any other
 ask, such as a question or a connection request, have the user answer in
 Nebula, for example with `nebula-ai chat --resume <thread-id>`.
 
-## Check a chat result
+### Check a chat result
 
 `chat --no-stream` blocks until the agent finishes or needs the user, for up
 to 15 minutes. Run it in the foreground only when your tool calls may run
@@ -226,7 +291,7 @@ Inspect `events` only when you need execution details; summarize rather than
 paste them. Output field details are in
 [references/json-output.md](references/json-output.md).
 
-## Continue a conversation
+### Continue a conversation
 
 The CLI calls agent conversations Tasks. `tasks` commands, `--task`, and
 `messages list --task` take the `thread_id` returned by `chat`, which is
@@ -270,8 +335,9 @@ the `id` that `tasks create` prints.
 This skill covers delegation. Unless the user explicitly asks, do not use
 voice calls (`call`), computer use (`local-device`, `install`,
 `uninstall`), scheduled jobs (`jobs`), workspace variables (`variables`),
-Miniapps, skills, Channel administration, posting or editing Channel
-messages, agent creation and editing, the ACP editor server (`acp`), or the
-MCP server (`mcp`). Each changes the user's machine,
-account, or workspace; confirm the exact command with `--help` and get
-approval first.
+Miniapps, skills, Channel administration (including `create_channel`),
+posting or editing Channel messages (including `post_to_channel`), agent
+creation and editing, the ACP editor server (`acp`), or setting up the stdio
+MCP bridge (`mcp`) beyond signing in a configured one. Each changes the user's
+machine, account, or workspace; confirm the exact command with `--help`, or the
+tool's arguments, and get approval first.

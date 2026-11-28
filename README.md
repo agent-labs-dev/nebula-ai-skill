@@ -2,16 +2,17 @@
 
 [![CI](https://github.com/agent-labs-dev/nebula-ai-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/agent-labs-dev/nebula-ai-skill/actions/workflows/ci.yml)
 
-An [Agent Skill](https://agentskills.io) that teaches AI agents to use the
-`nebula-ai` CLI. Agents delegate work to specialized Nebula agents and act
-through services connected to a Nebula workspace, such as Gmail, Slack,
-GitHub, Linear, and calendars, without ever handling the underlying service
-credentials.
+An [Agent Skill](https://agentskills.io) that teaches AI agents to use Nebula,
+through its MCP server or the `nebula-ai` CLI. Agents delegate work to
+specialized Nebula agents and act through services connected to a Nebula
+workspace, such as Gmail, Slack, GitHub, Linear, and calendars, without ever
+handling the underlying service credentials.
 
 ## Compatibility
 
 | Skill | nebula-ai CLI |
 |---|---|
+| 0.10.0 | 0.1.47 |
 | 0.9.4 | 0.1.46 |
 | 0.9.3 | 0.1.46 |
 | 0.9.2 | 0.1.43 |
@@ -53,25 +54,31 @@ metadata for clients that read it.
 
 ## Requirements
 
-- Node.js 18 or later with npm
 - A Nebula account and network access to nebula.gg
+- By default, an MCP client connected to `https://api.nebula.gg/mcp`. See
+  [Connect your AI client](https://docs.nebula.gg/docs/workspace/connect-your-ai-client).
+- For clients without MCP, and for steps MCP cannot do: Node.js 18 or later
+  with npm, and the CLI
 
-The skill offers to install the CLI after asking. To install it yourself:
+The skill asks before it installs the CLI. To install it yourself:
 
 ```sh
-npm install --global nebula-ai@0.1.46
+npm install --global nebula-ai@0.1.47
 nebula-ai login
 ```
 
 ## What the skill does
 
-- Checks that the CLI is installed and signed in.
-- Lists workspaces, and agents with the services each one can use.
-- Talks to the workspace's own Nebula in Home, or delegates a task to a
-  chosen agent in its own Task, waits for the result without holding one long
-  command open, and reports the result, the agent that handled it, and the
-  thread for follow-ups.
-- Continues and inspects existing threads.
+- Uses Nebula's MCP tools by default, and asks you to sign in when the server
+  is configured but signed out.
+- Falls back to the CLI when the client cannot use MCP or you decline to
+  connect it or sign in, and for steps MCP cannot do, such as relaying your approval or
+  attaching local files.
+- Delegates a task to a chosen agent in its own Task, waits for the result
+  without holding one long call open, and reports the agent's reply.
+- Continues and inspects existing Tasks.
+- Through the CLI, lists workspaces and the services each agent can use, and
+  talks to the workspace's own Nebula in Home.
 
 Voice calls, computer use, scheduled jobs, Miniapps, skills, Channel
 administration, and agent creation or editing require a separate request

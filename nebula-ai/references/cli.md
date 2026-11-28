@@ -1,12 +1,12 @@
 # nebula-ai CLI reference
 
-Commands relevant to delegation in nebula-ai 0.1.46. For anything else, read
+Commands relevant to delegation in nebula-ai 0.1.47. For anything else, read
 the command's `--help` output before running it.
 
 ## Install and sign in
 
 ```sh
-npm install --global nebula-ai@0.1.46
+npm install --global nebula-ai@0.1.47
 nebula-ai --version
 nebula-ai login
 nebula-ai status
@@ -116,6 +116,8 @@ nebula-ai --json tasks list --channel <channel>
 nebula-ai --json tasks get <thread-id>
 nebula-ai --json tasks wait <thread-id>
 nebula-ai --json messages list --task <thread-id> --limit 50
+nebula-ai --json messages list --channel <channel> --limit 50
+nebula-ai --json messages list --channel <channel> --agent-activity
 nebula-ai --json tasks create -a <agent-handle> -- "<task>"
 ```
 
@@ -128,6 +130,10 @@ Channel, agent, and `phase`; an archived or dismissed Task is `not_found`.
 prints the `chat --no-stream` result with its exit codes; when the Task opens
 no turn within 15 seconds it exits `5` and prints nothing.
 `messages list --task` prints the most recent messages, oldest first.
+`messages list --channel` prints a Channel's recent top-level messages, Home
+without `--channel`. It leaves out agent activity (check-ins, job reports,
+agents answering agents) unless you add `--agent-activity`. Pass `--task` on
+its own, without either of those options.
 
 `tasks create` is the way to start new work. It sends `<task>` to the agent
 like `chat` does, so the same approval rules apply, but it returns once the
@@ -158,7 +164,7 @@ behalf.
 |---|---|---|
 | CLI missing | The shell reports `command not found` (exit `127`) | Ask, then install the verified version. |
 | Not signed in | Exit `3`; `status` prints `auth.logged_in` false, other commands print an `auth_required` error | Run `nebula-ai login` and wait for the user. |
-| Unknown command, option, or unknown or ambiguous `--workspace` | Exit `2`, `usage` error; nothing read or written | Check `--help`, or fix the workspace without substituting another; the installed CLI may differ from 0.1.46. |
+| Unknown command, option, or unknown or ambiguous `--workspace` | Exit `2`, `usage` error; nothing read or written | Check `--help`, or fix the workspace without substituting another; the installed CLI may differ from 0.1.47. |
 | Task, message, approval, `agents get` target or `chat --agent` agent not found | Exit `6`, `not_found` error, nothing sent | Re-list agents, Tasks or approvals; do not substitute another. |
 | Run failed | Exit `1`, JSON printed with `status` `failed` | Report it once. |
 | Run waiting for the user | Exit `4`, JSON printed with `status` `waiting` and `pending` | See the result handling in SKILL.md. |
