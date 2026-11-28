@@ -94,8 +94,9 @@ CLI.
    an unknown slug, or an agent that is not on the Channel's roster leaves the
    Task with Nebula. Before a write, check the roster with
    `channels agents <channel>` (`home` for Home) if the CLI is signed in;
-   otherwise say this when you ask the user to approve. The call returns once
-   the message is posted; keep its `thread_slug` and `channel`.
+   otherwise have the user confirm in Nebula that the agent is on it, and send
+   once they do. The call returns once the message is posted; keep its
+   `thread_slug` and `channel`.
    - An error naming `#<channel>/<handle>` means that Task exists: read it by
      that handle.
    - After any other failure that does not say the post was refused, look with
