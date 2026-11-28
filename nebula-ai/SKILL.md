@@ -22,11 +22,12 @@ MCP is the default. Take the first case that matches:
 1. Your client lists Nebula's MCP tools, such as `list_agents` and
    `post_to_task`: [work through MCP](#work-through-mcp). It needs no CLI
    install or `nebula-ai login`.
-2. Nebula's MCP server is configured but not signed in: ask the user to sign
-   in through the client's MCP authentication, and wait. In Claude Code they
-   run `/mcp` and choose the server, or run `claude mcp login <name>`. For the
-   stdio bridge they run `nebula-ai mcp --login`; `nebula-ai login` does not
-   sign it in. Do not switch to the CLI meanwhile.
+2. Nebula's MCP server is configured but not signed in (the client says it
+   needs authentication, or lists only a sign-in tool for it): ask the user to
+   sign in through the client's MCP authentication, and wait. In Claude Code
+   they run `/mcp` and choose the server, or run `claude mcp login <name>`. For
+   the stdio bridge they run `nebula-ai mcp --login`; `nebula-ai login` does
+   not sign it in. Do not switch to the CLI meanwhile.
 3. Your client supports MCP but has no Nebula server: offer to connect it,
    following the client's steps in
    <https://docs.nebula.gg/docs/workspace/connect-your-ai-client>. In Claude
