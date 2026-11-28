@@ -92,10 +92,10 @@ CLI.
 2. Send new work with `post_to_task`, without `task`: set `expects_response`
    to true and put exactly one `@agent:<slug>` in `message`. A second agent tag,
    an unknown slug, or an agent that is not on the Channel's roster leaves the
-   Task with Nebula, so before a write, check the roster with
-   `channels agents <channel>` (`home` for Home) if the CLI is signed in. The
-   call returns once the message is posted; keep its `thread_slug` and
-   `channel`.
+   Task with Nebula. Before a write, check the roster with
+   `channels agents <channel>` (`home` for Home) if the CLI is signed in;
+   otherwise say this when you ask the user to approve. The call returns once
+   the message is posted; keep its `thread_slug` and `channel`.
    - An error naming `#<channel>/<handle>` means that Task exists: read it by
      that handle.
    - After any other failure that does not say the post was refused, look with
@@ -122,7 +122,7 @@ CLI.
 4. Follow up on the same work by calling `check_work_status` for the Task, then
    `post_to_task`: `thread_slug` as `task`, `channel` as `channel_handle`,
    `expects_response` true, and one `@agent:<slug>`. Tag the `owner_handle` if
-   there is one, because a tag overrides who holds the Task; otherwise tag the
+   there is one, because the tag decides which agent answers; otherwise tag the
    agent you chose. Unrelated work gets a new Task. If the slug is lost,
    `check_work_status` without `slug` lists up to five live Tasks agents started
    in a Channel; if yours is not there, ask the user. Do not guess: an unused
