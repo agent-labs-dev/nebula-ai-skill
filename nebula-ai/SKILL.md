@@ -27,7 +27,8 @@ MCP is the default. Take the first case that matches:
    sign in through the client's MCP authentication, and wait. In Claude Code
    they run `/mcp` and choose the server, or run `claude mcp login <name>`. For
    the stdio bridge they run `nebula-ai mcp --login`; `nebula-ai login` does
-   not sign it in. Do not switch to the CLI meanwhile.
+   not sign it in. Do not switch to the CLI meanwhile. In a headless session,
+   where nobody can sign in, report that MCP needs sign-in and stop.
 3. Your client supports MCP but has no Nebula server: offer to connect it,
    following the client's steps in
    <https://docs.nebula.gg/docs/workspace/connect-your-ai-client>. In Claude
@@ -42,12 +43,13 @@ MCP is the default. Take the first case that matches:
    [work through the CLI](#work-through-the-cli).
 
 While on MCP, use the CLI only for what MCP cannot do: relay an approval
-decision, attach local files, show an agent's `toolkits` and `can_run`, read
-what `check_work_status` clips or omits, or run a command that has no MCP tool.
-Run all of [Prepare](#prepare) first, and pass `--workspace` with the workspace
-the MCP connection signed in to (ask the user if you do not know it), since the
-CLI's saved default can differ. The CLI names a Task by its ID, not MCP's
-`thread_slug`: find it as for a lost `thread_id` in
+decision, attach local files, work in another workspace, show an agent's
+`toolkits` and `can_run` or a Channel's agents, read what `check_work_status`
+clips or omits, or run a command that has no MCP tool. Run all of
+[Prepare](#prepare) first, and always pass `--workspace`, since the CLI's saved
+default can differ: name the workspace the user asked for, or else the one the
+MCP connection signed in to (ask if you do not know it). The CLI names a Task by
+its ID, not MCP's `thread_slug`: find it as for a lost `thread_id` in
 [Continue a conversation](#continue-a-conversation).
 
 ## Rules on both paths
@@ -60,13 +62,15 @@ CLI's saved default can differ. The CLI names a Task by its ID, not MCP's
 - Do not substitute another agent, account, or workspace for one that is
   missing or refused.
 - Report the agent's reply, not just that the task was sent. In a headless
-  session, keep polling until the Task settles before you finish.
+  session, keep polling until the Task settles. If only a person can move it on,
+  or it stops moving, report its state and its `thread_slug` or `thread_id`,
+  then finish.
 
 ## Work through MCP
 
 | Tool | Use |
 |---|---|
-| `list_agents` | The agents you can see: `slug`, `name`, `purpose`, and `kind`. |
+| `list_agents` | The agents you can see: `slug`, `name`, `purpose`, `kind`, and `enabled`. |
 | `post_to_task` | Start or continue a Task. |
 | `check_work_status` | Read a Task's `state` and recent `conversation`. |
 | `list_channels` | The Channels you can reach, apart from your Home. |
@@ -76,38 +80,59 @@ CLI's saved default can differ. The CLI names a Task by its ID, not MCP's
 | `create_channel` | Create a Channel. |
 
 Omit a tool's Channel argument to use the user's Home. Take the other arguments
-from the tool's schema.
+from the tool's schema. Sign-in picks the connection's workspace, and no tool
+takes another: when the user names a workspace, confirm with them that the
+connection signed in to it. If it did not, have them reconnect to it, or use the
+CLI.
 
-1. Choose an agent from `list_agents` by `name`, `slug`, and `purpose`; do not
-   invent one. The list does not show which services an agent can use, so when
-   the task depends on one and `purpose` does not settle it, ask the user or
-   check `toolkits` with the CLI.
+1. Choose an agent from `list_agents` by `name`, `slug`, and `purpose`, skipping
+   any whose `enabled` is false; do not invent one. The list does not show which
+   services an agent can use, so when the task depends on one and `purpose` does
+   not settle it, ask the user or check `toolkits` with the CLI.
 2. Send new work with `post_to_task`, without `task`: set `expects_response`
-   to true and put one `@agent:<slug>` in `message`. The call returns once the
-   message is posted; keep its `thread_slug` and `channel`. If it fails without
-   saying the post was refused, look for it with `check_work_status` (no
-   `slug`) and `read_channel_messages` before sending again, which could repeat
-   a write.
+   to true and put exactly one `@agent:<slug>` in `message`. A second agent tag,
+   an unknown slug, or an agent that is not on the Channel's roster leaves the
+   Task with Nebula, so before a write, check the roster with
+   `channels agents <channel>` (`home` for Home) if the CLI is signed in. The
+   call returns once the message is posted; keep its `thread_slug` and
+   `channel`.
+   - An error naming `#<channel>/<handle>` means that Task exists: read it by
+     that handle.
+   - After any other failure that does not say the post was refused, look with
+     `check_work_status` (no `slug`) and `read_channel_messages`.
+   - If the message is there, do not resend it. If you cannot find it, ask the
+     user before sending again, which could repeat a write. Check a failed
+     follow-up the same way.
 3. Every 30 to 60 seconds, call `check_work_status` with `thread_slug` as
    `slug` and `channel` as `channel_handle`, and branch on `state`:
    - `not_started` or `running`: poll again.
    - `stalled_on_person`: tell the user what `state_line` says it waits on, and
      have them answer in Nebula. If they would rather decide an approval here,
      [relay it](#relay-an-approval) with the CLI.
-   - `finished`: settled once `conversation` shows the agent's answer after
-     your message; until then, poll again.
+   - `finished`: settled once `conversation` shows an answer after your
+     message; until then, poll again.
    - `failed` or `canceled`: settled. Report the outcome.
    - `unclear`: not done. Poll again, and report it if it stays.
-4. Follow up on the same work with `post_to_task`: `thread_slug` as `task`,
-   `channel` as `channel_handle`, the same `@agent:<slug>`, and
-   `expects_response` true. Unrelated work gets a new Task. If the slug is
-   lost, `check_work_status` without `slug` lists the live Tasks agents started
+
+   Each `conversation` line starts with its author: report an answer under that
+   name. When it is not the chosen agent's `name`, an `owner_handle` naming
+   another agent means the Task was handed to them. With no `owner_handle`,
+   Nebula took the Task: say so, do not resend, and have the user check the
+   Channel's roster in Nebula.
+4. Follow up on the same work by calling `check_work_status` for the Task, then
+   `post_to_task`: `thread_slug` as `task`, `channel` as `channel_handle`,
+   `expects_response` true, and one `@agent:<slug>`. Tag the `owner_handle` if
+   there is one, because a tag overrides who holds the Task; otherwise tag the
+   agent you chose. Unrelated work gets a new Task. If the slug is lost,
+   `check_work_status` without `slug` lists up to five live Tasks agents started
    in a Channel; if yours is not there, ask the user. Do not guess: an unused
    `task` handle starts a new Task.
 
-When MCP refuses a write, because it needs approval or the hourly write limit
-is spent (`rate_limited`), tell the user and let them approve or do it in
-Nebula. Do not retry it through MCP or the CLI.
+When MCP refuses a write, tell the user why, and do not retry it through MCP or
+the CLI. MCP shows no approval card, so a write that needs approval is theirs to
+make, and approve, in Nebula. A spent hourly write limit (`rate_limited`) leaves
+nothing to approve: they can do it in Nebula, or ask you again after the limit
+resets.
 
 ## Work through the CLI
 

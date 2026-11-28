@@ -13,8 +13,9 @@ Verified against nebula-ai CLI 0.1.47.
 - Make Nebula's MCP server the default path: ask the user to sign in when it is
   configured but signed out, offer to connect it when it is missing, and keep
   the CLI for clients without MCP and for steps MCP cannot do.
-- Describe all eight MCP tools, how to follow a Task through its states, and
-  what to do when a write is refused.
+- Describe all eight MCP tools, how to follow a Task through its states and
+  hand-offs, which agent answered, and what to do when a post fails or a write
+  is refused.
 - Update the supported CLI version and generated command surface to 0.1.47.
 - Document that `messages list` leaves a Channel's agent activity out unless
   `--agent-activity` is passed.

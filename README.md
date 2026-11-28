@@ -75,7 +75,8 @@ nebula-ai login
   connect it or sign in, and for steps MCP cannot do, such as relaying your approval or
   attaching local files.
 - Delegates a task to a chosen agent in its own Task, waits for the result
-  without holding one long call open, and reports the agent's reply.
+  without holding one long call open, and reports the reply and which agent
+  wrote it.
 - Continues and inspects existing Tasks.
 - Through the CLI, lists workspaces and the services each agent can use, and
   talks to the workspace's own Nebula in Home.
